@@ -1,8 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { getDatabaseUrl } from "./connection";
 import * as schema from "./schema";
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = getDatabaseUrl();
 
 function createDb() {
   if (!connectionString) return null;
@@ -11,4 +12,4 @@ function createDb() {
 }
 
 export const db = createDb();
-export { schema };
+export { schema, getDatabaseUrl };

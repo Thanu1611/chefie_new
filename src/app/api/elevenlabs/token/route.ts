@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
+import {
+  elevenLabsAgentEnvName,
+  getElevenLabsAgentIdFromVariant,
+  parseElevenLabsAgentVariant,
+} from "@/lib/voice/elevenlabs-agents-server";
 
 const ELEVENLABS_API = "https://api.elevenlabs.io";
 
-export async function GET() {
-  const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_KEY?.trim();
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const variant =
+    parseElevenLabsAgentVariant(searchParams.get("variant")) ?? "common";
+  const agentId = getElevenLabsAgentIdFromVariant(variant);
   const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
 
   if (!agentId) {
     return NextResponse.json(
-      { error: "NEXT_PUBLIC_ELEVENLABS_AGENT_KEY is not set." },
+      { error: `${elevenLabsAgentEnvName(variant)} is not set.` },
       { status: 500 },
     );
   }

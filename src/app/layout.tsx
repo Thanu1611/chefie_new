@@ -9,9 +9,9 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Chefie — Your AI Cooking Assistant",
+  title: "Cooking Assistant",
   description:
-    "Discover Chinese, Indian, and Sri Lankan recipes. Cook step-by-step with voice guidance.",
+    "Discover Chinese, Indian, and Sri Lankan dishes. Cook step-by-step with voice guidance.",
 };
 
 export default function RootLayout({

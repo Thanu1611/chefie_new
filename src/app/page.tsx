@@ -1,43 +1,114 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  IconBook2,
+  IconCalendar,
   IconChefHat,
+  IconList,
+  IconMicrophone,
   IconSearch,
   IconSparkles,
 } from "@tabler/icons-react";
-import { CuisineCard } from "@/components/home/CuisineCard";
-import { CUISINES } from "@/lib/constants";
+import { Logo } from "@/components/brand/Logo";
+import { GenerateRecipePopup } from "@/components/home/GenerateRecipePopup";
+
+const FEATURES = [
+  {
+    icon: IconSearch,
+    title: "Explore cuisines",
+    description:
+      "Browse Chinese, Indian, and Sri Lankan dishes by meal and diet — veg or non-veg — with photos, prep times, and full recipes.",
+    href: "/cuisines",
+    cta: "View cuisines",
+  },
+  {
+    icon: IconList,
+    title: "Step-by-step cooking",
+    description:
+      "Follow guided steps with built-in timers and break reminders so you never lose track while cooking.",
+    href: "/cuisines",
+    cta: "Pick a dish",
+  },
+  {
+    icon: IconMicrophone,
+    title: "Voice assistant",
+    description:
+      "Ask hands-free about ingredients, substitutions, and techniques — dish-specific help when you open voice from a recipe.",
+    href: "/voice",
+    cta: "Try voice",
+  },
+  {
+    icon: IconSparkles,
+    title: "AI recipe generator",
+    description:
+      "Enter what you have in your kitchen and get a custom recipe matched to your chosen cuisine.",
+    href: "/generate",
+    cta: "Generate recipe",
+  },
+  {
+    icon: IconBook2,
+    title: "Your library",
+    description:
+      "Save dishes you love and return to them anytime from one place.",
+    href: "/library",
+    cta: "Open library",
+  },
+  {
+    icon: IconCalendar,
+    title: "Meal planning",
+    description:
+      "Plan breakfast, lunch, and dinner using your saved and predefined recipes. Generate shopping lists from selected date ranges and track what you need to buy.",
+    href: "/meal-planning",
+    cta: "Plan meals",
+  },
+] as const;
+
+const STEPS = [
+  {
+    step: "1",
+    title: "Choose a cuisine",
+    text: "Start with Chinese, Indian, or Sri Lankan — filter by breakfast, lunch, or dinner.",
+  },
+  {
+    step: "2",
+    title: "Cook with guidance",
+    text: "Use the step guide, timers, or voice assistant while you prepare the dish.",
+  },
+  {
+    step: "3",
+    title: "Save & repeat",
+    text: "Keep favorites in your library or generate new recipes from ingredients at home.",
+  },
+] as const;
 
 export default function HomePage() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
+      {/* Hero */}
       <section className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
         <div className="space-y-6 text-center md:text-left">
-          <div className="flex items-center justify-center gap-3 md:justify-start">
-            <Image
-              src="/logo.png"
-              alt="Chefie logo"
-              width={56}
-              height={56}
-              className="rounded-2xl shadow-md"
-              priority
-            />
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-              Chef<span className="text-brand">ie</span>
+          {/* <div className="flex justify-center md:justify-start">
+            <Logo size={88} />
+          </div> */}
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              Cook with confidence
             </h1>
+            <p className="text-lg text-muted md:text-xl">
+              Chefie is your cooking companion for Chinese, Indian, and Sri Lankan
+              flavors — with voice guidance, step-by-step mode, and custom AI
+              recipes.
+            </p>
           </div>
-          <p className="text-lg text-muted md:text-xl">
-            Your friendly cooking companion for Chinese, Indian, and Sri Lankan
-            flavors — with voice guidance, step-by-step mode, and AI recipes.
-          </p>
+
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center md:justify-start">
-            <Link href="/recipes" className="btn-primary text-base">
+            <Link href="/cuisines" className="btn-primary text-base">
               <IconChefHat size={20} />
               Start Cooking
             </Link>
-            <Link href="/recipes" className="btn-secondary text-base">
-              <IconSearch size={20} />
-              Explore Recipes
+            <Link href="/generate" className="btn-secondary text-base">
+              <IconSparkles size={20} />
+              Generate a recipe
             </Link>
           </div>
         </div>
@@ -53,45 +124,87 @@ export default function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/90 p-4 backdrop-blur">
-            <p className="text-sm font-medium text-foreground">
-              Cook with confidence
-            </p>
+            <p className="text-sm font-medium text-foreground">Warm kitchens, real recipes</p>
             <p className="text-xs text-muted">
-              Voice assistant · Timers · AI recipe generator
+              Predefined dishes · Voice help · Timers · AI generator
             </p>
           </div>
         </div>
       </section>
 
+      {/* About */}
       <section className="space-y-6">
-        <div className="text-center md:text-left">
-          <h2 className="text-2xl font-bold text-foreground">Pick a cuisine</h2>
-          <p className="mt-1 text-muted">
-            Explore authentic recipes from three vibrant culinary traditions.
+        <header className="max-w-3xl">
+          <h2 className="text-2xl font-bold text-foreground">What is Chefie?</h2>
+          <p className="mt-3 text-muted leading-relaxed">
+            Chefie helps you discover authentic dishes from three vibrant culinary
+            traditions and actually cook them — not just read about them. Every
+            recipe comes from our curated database with real ingredients, cooking
+            steps, and timing so you know exactly what to do next.
           </p>
-        </div>
+          <p className="mt-3 text-muted leading-relaxed">
+            Whether you are learning a new cuisine or improvising with what is in
+            your pantry, Chefie combines structured guides with AI-powered tools
+            so you spend less time guessing and more time enjoying the meal.
+          </p>
+        </header>
+      </section>
+
+      {/* Features */}
+      <section className="space-y-6">
+        <header>
+          <h2 className="text-2xl font-bold text-foreground">What you can do</h2>
+          <p className="mt-1 text-muted">
+            Everything you need to go from craving to plated dish.
+          </p>
+        </header>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CUISINES.map((c) => (
-            <CuisineCard key={c.id} {...c} />
+          {FEATURES.map(({ icon: Icon, title, description, href }) => (
+            <Link
+              key={title}
+              href={href}
+              className="card-hover flex flex-col gap-3 p-5"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/15 text-brand">
+                <Icon size={22} stroke={1.75} />
+              </span>
+              <h3 className="font-semibold text-foreground">{title}</h3>
+              <p className="flex-1 text-sm leading-relaxed text-muted">
+                {description}
+              </p>
+            </Link>
           ))}
         </div>
       </section>
 
-      <section className="card bg-gradient-to-r from-brand/10 to-warm-100 p-6 md:flex md:items-center md:justify-between md:p-8">
-        <div>
-          <h2 className="text-xl font-bold text-foreground">
-            Have ingredients at home?
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Let Chefie&apos;s AI suggest a recipe from what you already have.
-          </p>
-        </div>
-        <Link href="/generate" className="btn-primary mt-4 md:mt-0">
-          <IconSparkles size={18} />
-          Generate Recipe
-        </Link>
+      {/* How it works */}
+      <section className="card bg-gradient-to-br from-brand/8 via-warm-50 to-surface p-6 md:p-10">
+        <h2 className="text-2xl font-bold text-foreground">How it works</h2>
+        <p className="mt-1 text-muted">Three simple steps to your next meal.</p>
+        <ol className="mt-8 grid gap-6 md:grid-cols-3">
+          {STEPS.map(({ step, title, text }) => (
+            <li key={step} className="space-y-2">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+                {step}
+              </span>
+              <h3 className="font-semibold text-foreground">{title}</h3>
+              <p className="text-sm leading-relaxed text-muted">{text}</p>
+            </li>
+          ))}
+        </ol>
+        {/* <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/cuisines" className="btn-primary">
+            <IconChefHat size={18} />
+            Explore cuisines
+          </Link>
+          <Link href="/voice" className="btn-secondary">
+            <IconMicrophone size={18} />
+            Voice assistant
+          </Link>
+        </div> */}
       </section>
+
+      <GenerateRecipePopup />
     </div>
   );
 }
-

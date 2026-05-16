@@ -9,20 +9,21 @@ import {
   IconMicrophone,
   IconRefresh,
   IconCircleCheck,
+  IconClock,
 } from "@tabler/icons-react";
-import type { Recipe } from "@/types/recipe";
+import type { DishStep, DishWithSteps } from "@/types/dish";
 import { Timer } from "./Timer";
 
 interface StepGuideProps {
-  recipe: Recipe;
+  dish: DishWithSteps;
 }
 
-export function StepGuide({ recipe }: StepGuideProps) {
-  const sorted = [...recipe.steps].sort((a, b) => a.order - b.order);
+export function StepGuide({ dish }: StepGuideProps) {
+  const steps = [...dish.steps].sort((a, b) => a.stepNumber - b.stepNumber);
   const [index, setIndex] = useState(0);
   const [repeatKey, setRepeatKey] = useState(0);
-  const done = index >= sorted.length;
-  const step = sorted[index];
+  const done = index >= steps.length;
+  const step: DishStep | undefined = steps[index];
 
   if (done) {
     return (
@@ -32,31 +33,40 @@ export function StepGuide({ recipe }: StepGuideProps) {
         </span>
         <h1 className="text-3xl font-bold text-foreground">Your meal is ready!</h1>
         <p className="max-w-md text-muted">
-          You finished cooking {recipe.name}. Enjoy your delicious meal!
+          You finished cooking {dish.dishName}. Enjoy your delicious meal!
         </p>
-        <Link href={`/recipes/${recipe.id}`} className="btn-primary">
-          Back to recipe
+        <Link href={`/dishes/${dish.dishId}`} className="btn-primary">
+          Back to dish
         </Link>
       </section>
     );
   }
 
+  if (!step) return null;
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between text-sm text-muted">
         <span>
-          Step {index + 1} of {sorted.length}
+          Step {index + 1} of {steps.length}
         </span>
-        <span className="capitalize">{recipe.name}</span>
+        <span>{dish.dishName}</span>
       </div>
 
-      <article className="card p-6 md:p-8" key={`${index}-${repeatKey}`}>
-        <p className="text-lg leading-relaxed text-foreground md:text-xl">
+      <article className="card space-y-3 p-6 md:p-8" key={`${index}-${repeatKey}`}>
+        <h2 className="text-xl font-semibold text-foreground">{step.title}</h2>
+        <p className="text-lg leading-relaxed text-muted md:text-xl">
           {step.instruction}
         </p>
+        {step.breakTimeMinutes > 0 && (
+          <p className="inline-flex items-center gap-1 text-sm text-brand">
+            <IconClock size={16} />
+            Break: {step.breakTimeMinutes} min before next step
+          </p>
+        )}
       </article>
 
-      {step.timerMinutes != null && step.timerMinutes > 0 && (
+      {step.timerRequired && step.timerMinutes != null && step.timerMinutes > 0 && (
         <Timer key={`timer-${index}-${repeatKey}`} initialMinutes={step.timerMinutes} />
       )}
 
@@ -76,14 +86,11 @@ export function StepGuide({ recipe }: StepGuideProps) {
           className="btn-secondary"
         >
           <IconRefresh size={18} />
-          Repeat
+          Repeat step
         </button>
-        <Link
-          href={`/voice?recipe=${recipe.id}`}
-          className="btn-secondary"
-        >
+        <Link href={`/voice?dishId=${dish.dishId}`} className="btn-secondary">
           <IconMicrophone size={18} />
-          Ask Chefie
+          Ask assistant
         </Link>
         <button
           type="button"
@@ -102,4 +109,3 @@ export function StepGuide({ recipe }: StepGuideProps) {
     </section>
   );
 }
-
