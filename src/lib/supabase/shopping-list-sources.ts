@@ -288,13 +288,13 @@ export async function addMealPlansToViewList(
           .select("id")
           .single();
 
-        if (error || !inserted) {
+        if (error || inserted?.id == null) {
           lastError = error?.message ?? "Failed to insert item";
           continue;
         }
 
         itemId = inserted.id;
-        itemByMergeKey.set(mergeKey, { id: itemId, quantity: qtyText });
+        itemByMergeKey.set(mergeKey, { id: inserted.id, quantity: qtyText });
         itemsTouched += 1;
       }
 

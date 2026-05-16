@@ -1,5 +1,5 @@
 import { asc, eq } from "drizzle-orm";
-import { parseDishIngredients } from "@/lib/dishes/dish-ingredients";
+import { getDishIngredients } from "@/lib/dishes/dish-ingredients";
 import { db } from "./index";
 import { cuisines, dishes, dishSteps } from "./schema";
 import * as supabaseQueries from "@/lib/supabase/queries";
@@ -32,7 +32,8 @@ function mapDish(row: typeof dishes.$inferSelect, cuisine?: Cuisine): Dish {
     imageUrl: row.imageUrl,
     prepTime: row.prepTime,
     cookingTime: row.cookingTime,
-    ingredients: parseDishIngredients(row.ingredients),
+    baseServings: row.baseServings,
+    ingredients: getDishIngredients(row.dishName),
     cuisine,
   };
 }

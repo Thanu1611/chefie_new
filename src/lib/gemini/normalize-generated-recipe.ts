@@ -150,6 +150,7 @@ export function normalizeGeneratedRecipe(
       `A ${parseMealType(r.meal_type ?? r.mealType).toLowerCase()} recipe using your ingredients.`,
     ),
     cuisine_id: asString(r.cuisine_id) || appCuisineToDbId(selectedCuisine),
+    cuisine: selectedCuisine,
     meal_type: parseMealType(r.meal_type ?? r.mealType),
     dish_type: parseDishType(r.dish_type ?? r.dishType, ingredientsText),
     image_url: sanitizeRemoteImageUrl(

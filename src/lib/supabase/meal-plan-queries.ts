@@ -13,23 +13,39 @@ type MealPlanRow = {
   dish_id: string;
   servings?: number | null;
   created_at: string;
-  dishes: {
-    dish_id: string;
-    dish_name: string;
-    description: string;
-    meal_type: string;
-    dish_type: string;
-    cuisine_id: string;
-    image_url: string;
-    prep_time: number;
-    cooking_time: number;
-    base_servings?: number | null;
-    cuisines: { cuisine_name: string } | { cuisine_name: string }[] | null;
-  } | null;
+  dishes:
+    | {
+        dish_id: string;
+        dish_name: string;
+        description: string;
+        meal_type: string;
+        dish_type: string;
+        cuisine_id: string;
+        image_url: string;
+        prep_time: number;
+        cooking_time: number;
+        base_servings?: number | null;
+        cuisines: { cuisine_name: string } | { cuisine_name: string }[] | null;
+      }
+    | {
+        dish_id: string;
+        dish_name: string;
+        description: string;
+        meal_type: string;
+        dish_type: string;
+        cuisine_id: string;
+        image_url: string;
+        prep_time: number;
+        cooking_time: number;
+        base_servings?: number | null;
+        cuisines: { cuisine_name: string } | { cuisine_name: string }[] | null;
+      }[]
+    | null;
 };
 
 function mapPlanRow(row: MealPlanRow): MealPlanEntry | null {
-  const dish = row.dishes;
+  const dishRaw = row.dishes;
+  const dish = Array.isArray(dishRaw) ? dishRaw[0] : dishRaw;
   if (!dish) return null;
   const cuisineRel = dish.cuisines;
   const cuisineName = Array.isArray(cuisineRel)
@@ -106,7 +122,7 @@ export async function getMealPlansInRange(
     return [];
   }
 
-  return (data as MealPlanRow[])
+  return (data as unknown as MealPlanRow[])
     .map(mapPlanRow)
     .filter((p): p is MealPlanEntry => p != null);
 }
