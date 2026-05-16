@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import {
   ConversationProvider,
   useConversation,
@@ -11,13 +10,21 @@ import {
 } from "@elevenlabs/react";
 import {
   IconAlertCircle,
-  IconMicrophone,
-  IconMicrophoneOff,
   IconRobot,
   IconSend,
   IconUser,
 } from "@tabler/icons-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { VoiceMicButton, type VoiceMicMode } from "@/components/voice/VoiceMicButton";
+import { useAgentVisualizer } from "@/hooks/useAgentVisualizer";
+import { useMicVisualizer } from "@/hooks/useMicVisualizer";
+import { buildElevenLabsDishDynamicVariables } from "@/lib/voice/elevenlabs-dish-variables";
+import {
+  elevenLabsAgentEnvName,
+  resolveElevenLabsAgentId,
+  type ElevenLabsAgentVariant,
+} from "@/lib/voice/elevenlabs-agents";
+import type { DishWithSteps } from "@/types/dish";
 
 interface Message {
   id: string;
@@ -25,9 +32,20 @@ interface Message {
   text: string;
 }
 
-function VoiceAssistantInner() {
-  const searchParams = useSearchParams();
-  const recipeId = searchParams.get("recipe");
+interface VoiceAssistantProps {
+  dish?: DishWithSteps | null;
+  dishContext?: string | null;
+}
+
+interface VoiceAssistantInnerProps extends VoiceAssistantProps {
+  agentVariant: ElevenLabsAgentVariant;
+}
+
+function VoiceAssistantInner({
+  dish,
+  dishContext,
+  agentVariant,
+}: VoiceAssistantInnerProps) {
   const { startSession, endSession } = useConversationControls();
   const { status, message: statusMessage } = useConversationStatus();
   const { sendUserMessage, isSpeaking, isListening } = useConversation();
@@ -38,6 +56,13 @@ function VoiceAssistantInner() {
 
   const connected = status === "connected";
   const hasError = status === "error";
+  const dishMode = Boolean(dish && dishContext);
+
+  const micActive = connected && isListening && !isMuted;
+  const agentActive = connected && isSpeaking && !isListening;
+  const { levels: micLevels, averageLevel: micAvg } = useMicVisualizer(micActive);
+  const { levels: agentLevels, averageLevel: agentAvg } =
+    useAgentVisualizer(agentActive);
 
   const addMessage = useCallback((role: Message["role"], text: string) => {
     const trimmed = text.trim();
@@ -56,10 +81,13 @@ function VoiceAssistantInner() {
     () => ({
       onConnect: () => {
         setConnecting(false);
-        addMessage(
-          "assistant",
-          "Hi! I'm Chefie. Ask me about cooking steps, substitutions, or fixing mistakes.",
-        );
+        // addMessage(
+        //   "assistant",
+        //   dishMode
+        //     ? `வணக்கம்! ${dish!.dishName} செய்வதற்கு நான் உங்களுக்கு உதவ தயாராக இருக்கிறேன் 😊  
+        // இந்த dish-க்கு தொடர்பான step, timer, அல்லது ingredient substitution பற்றி எதுவும் கேளுங்கள்.`
+        //     : "வணக்கம்! 😊 சமையல் steps, ingredient substitutions, அல்லது cooking mistakes fix செய்வது பற்றி என்னிடம் கேளுங்கள்.",
+        // );
       },
       onDisconnect: () => setConnecting(false),
       onError: (msg: string) => {
@@ -80,7 +108,7 @@ function VoiceAssistantInner() {
         if (part.text) addMessage("assistant", part.text);
       },
     }),
-    [addMessage],
+    [addMessage, dish, dishMode],
   );
 
   const handleConnect = async () => {
@@ -92,23 +120,24 @@ function VoiceAssistantInner() {
     setConnecting(true);
 
     try {
-      const res = await fetch("/api/elevenlabs/session");
+      const res = await fetch(
+        `/api/elevenlabs/session?variant=${agentVariant}`,
+      );
       const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.error ?? "Failed to prepare voice session");
       }
 
+      const dynamicVariables =
+        dish != null ? buildElevenLabsDishDynamicVariables(dish) : {};
+
       startSession({
         connectionType: "websocket",
         ...(data.signedUrl ? { signedUrl: data.signedUrl as string } : {}),
         connectionDelay: { default: 300 },
         ...sessionCallbacks(),
-        ...(recipeId
-          ? {
-              dynamicVariables: { recipe_id: recipeId },
-            }
-          : {}),
+        ...(Object.keys(dynamicVariables).length > 0 ? { dynamicVariables } : {}),
       });
     } catch (err) {
       setConnecting(false);
@@ -118,12 +147,38 @@ function VoiceAssistantInner() {
     }
   };
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    addMessage("user", text.trim());
+    const question = text.trim();
+    addMessage("user", question);
     if (connected) {
-      sendUserMessage(text.trim());
+      sendUserMessage(question);
+    } else if (dishContext) {
+      setConnecting(true);
+      try {
+        const res = await fetch("/api/help", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question,
+            dishContext,
+            dishId: dish?.dishId,
+          }),
+        });
+        const data = await res.json();
+        addMessage(
+          "assistant",
+          data.fix ?? "I can only help with this dish once connected or configured.",
+        );
+      } catch {
+        addMessage(
+          "assistant",
+          "Tap the microphone to start a voice session for this dish.",
+        );
+      } finally {
+        setConnecting(false);
+      }
     } else {
       addMessage(
         "assistant",
@@ -139,14 +194,39 @@ function VoiceAssistantInner() {
       ? statusMessage ?? "Connection error"
       : connected
         ? isSpeaking
-          ? "Chefie is speaking..."
+          ? "Assistant is speaking..."
           : isListening
             ? "Listening..."
-            : "Voice session active"
-        : "Tap to start voice cooking assistant";
+            : dishMode
+              ? `Guiding you through ${dish!.dishName}`
+              : "Voice session active"
+        : dishMode
+          ? `Tap to start — ${dish!.dishName} only`
+          : "Tap to start voice cooking assistant";
+
+  const placeholder = dishMode
+    ? `Ask about ${dish!.dishName} (steps, timers, swaps)...`
+    : "Type a cooking question...";
+
+  const micMode: VoiceMicMode = connecting
+    ? "connecting"
+    : connected
+      ? isSpeaking
+        ? "speaking"
+        : isListening
+          ? "listening"
+          : "idle"
+      : "idle";
 
   return (
     <section className="space-y-6">
+      {dishMode && (
+        <p className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-center text-sm text-foreground">
+          Dish-specific mode — guidance is limited to{" "}
+          <strong>{dish!.dishName}</strong>
+        </p>
+      )}
+
       {(hasError || statusMessage) && !connected && (
         <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           <IconAlertCircle className="mt-0.5 shrink-0" size={18} />
@@ -155,26 +235,31 @@ function VoiceAssistantInner() {
       )}
 
       <section className="card flex flex-col items-center gap-4 p-6 text-center">
-        <button
-          type="button"
-          onClick={handleConnect}
+        <VoiceMicButton
+          mode={micMode}
+          connected={connected}
           disabled={connecting}
-          className={`flex h-24 w-24 items-center justify-center rounded-full transition-all disabled:opacity-60 ${
-            connected
-              ? "bg-brand text-white shadow-lg shadow-brand/30 animate-pulse-soft"
-              : "bg-brand/15 text-brand hover:bg-brand hover:text-white"
-          }`}
-          aria-label={connected ? "End voice session" : "Start voice session"}
-        >
-          {connected ? (
-            <IconMicrophoneOff size={40} stroke={1.5} />
-          ) : (
-            <IconMicrophone size={40} stroke={1.5} />
-          )}
-        </button>
+          onClick={handleConnect}
+          barLevels={
+            micMode === "listening"
+              ? micLevels
+              : micMode === "speaking"
+                ? agentLevels
+                : undefined
+          }
+          averageLevel={
+            micMode === "listening"
+              ? micAvg
+              : micMode === "speaking"
+                ? agentAvg
+                : undefined
+          }
+        />
         <p className="text-sm font-medium text-foreground">{statusLabel}</p>
         <p className="text-xs text-muted">
-          Uses your microphone. Ask about substitutions, timing, and techniques.
+          {dishMode
+            ? "Ask only about this recipe — steps, timers, and substitutions."
+            : "Uses your microphone. Ask about substitutions, timing, and techniques."}
         </p>
         {connected && (
           <button
@@ -190,8 +275,9 @@ function VoiceAssistantInner() {
       <section className="card min-h-[280px] max-h-[420px] overflow-y-auto p-4">
         {messages.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted">
-            Your conversation will appear here. Try asking &quot;How do I fix salty
-            curry?&quot;
+            {dishMode
+              ? `Ask about step ${1}–${dish!.steps.length}, timers, or ingredient swaps for ${dish!.dishName}.`
+              : 'Your conversation will appear here. Try asking "How do I fix salty curry?"'}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -233,7 +319,7 @@ function VoiceAssistantInner() {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a cooking question..."
+          placeholder={placeholder}
           className="input flex-1"
         />
         <button type="submit" className="btn-primary shrink-0">
@@ -245,24 +331,44 @@ function VoiceAssistantInner() {
   );
 }
 
-export function VoiceAssistant() {
-  const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_KEY?.trim();
+export function VoiceAssistant({ dish, dishContext }: VoiceAssistantProps) {
+  const agentVariant: ElevenLabsAgentVariant = dish != null ? "dish" : "common";
+  const agentId = resolveElevenLabsAgentId(dish);
 
   if (!agentId) {
-    return <VoiceAssistantFallback />;
+    return (
+      <VoiceAssistantFallback
+        dish={dish}
+        dishContext={dishContext}
+        agentVariant={agentVariant}
+      />
+    );
   }
 
   return (
     <ConversationProvider agentId={agentId}>
-      <VoiceAssistantInner />
+      <VoiceAssistantInner
+        dish={dish}
+        dishContext={dishContext}
+        agentVariant={agentVariant}
+      />
     </ConversationProvider>
   );
 }
 
-function VoiceAssistantFallback() {
+interface VoiceAssistantFallbackProps extends VoiceAssistantProps {
+  agentVariant: ElevenLabsAgentVariant;
+}
+
+function VoiceAssistantFallback({
+  dish,
+  dishContext,
+  agentVariant,
+}: VoiceAssistantFallbackProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const dishMode = Boolean(dish && dishContext);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -278,7 +384,11 @@ function VoiceAssistantFallback() {
       const res = await fetch("/api/help", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: "missing-ingredient" }),
+        body: JSON.stringify(
+          dishContext
+            ? { question, dishContext, dishId: dish?.dishId }
+            : { topic: "missing-ingredient", question },
+        ),
       });
       const data = await res.json();
       setMessages((m) => [
@@ -295,7 +405,9 @@ function VoiceAssistantFallback() {
         {
           id: `a-${Date.now()}`,
           role: "assistant",
-          text: "I'm here to help! Describe what went wrong and we'll fix it together.",
+          text: dishMode
+            ? `Describe what went wrong with ${dish!.dishName} and we'll fix it.`
+            : "I'm here to help! Describe what went wrong and we'll fix it together.",
         },
       ]);
     } finally {
@@ -307,8 +419,16 @@ function VoiceAssistantFallback() {
     <section className="space-y-4">
       <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
         ElevenLabs agent ID not configured. Set{" "}
-        <code className="rounded bg-amber-100 px-1">NEXT_PUBLIC_ELEVENLABS_AGENT_KEY</code>{" "}
+        <code className="rounded bg-amber-100 px-1">
+          {elevenLabsAgentEnvName(agentVariant)}
+        </code>{" "}
         in .env to enable voice.
+        {dishMode && (
+          <>
+            {" "}
+            Text mode is limited to <strong>{dish!.dishName}</strong>.
+          </>
+        )}
       </p>
       <section className="card min-h-[200px] p-4">
         {loading && <LoadingState message="Chefie is thinking..." />}
@@ -326,7 +446,11 @@ function VoiceAssistantFallback() {
           className="input flex-1"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Ask a cooking question..."
+          placeholder={
+            dishMode
+              ? `Ask about ${dish!.dishName}...`
+              : "Ask a cooking question..."
+          }
         />
         <button type="submit" className="btn-primary">
           <IconSend size={18} />

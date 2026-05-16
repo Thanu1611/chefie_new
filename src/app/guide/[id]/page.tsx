@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { StepGuide } from "@/components/guide/StepGuide";
-import { getRecipeById } from "@/lib/recipes/queries";
+import { getDishById } from "@/lib/db/queries";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -10,24 +10,24 @@ interface PageProps {
 
 export default async function GuidePage({ params }: PageProps) {
   const { id } = await params;
-  const recipe = await getRecipeById(id);
+  const dish = await getDishById(id);
 
-  if (!recipe) notFound();
+  if (!dish || dish.steps.length === 0) notFound();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <Link
-        href={`/recipes/${recipe.id}`}
+        href={`/dishes/${dish.dishId}`}
         className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
       >
         <IconArrowLeft size={16} />
-        Back to recipe
+        Back to dish
       </Link>
       <header>
-        <h1 className="text-2xl font-bold text-foreground">Step-by-Step Guide</h1>
-        <p className="text-muted">{recipe.name}</p>
+        <h1 className="text-2xl font-bold text-foreground">Step-by-step guide</h1>
+        <p className="text-muted">{dish.dishName}</p>
       </header>
-      <StepGuide recipe={recipe} />
+      <StepGuide dish={dish} />
     </div>
   );
 }

@@ -1,10 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { generateRecipeWithGemini } from "@/lib/gemini/generate-recipe";
+import {
+  GeminiApiError,
+  geminiErrorToPayload,
+  logGeminiError,
+  toGeminiApiError,
+} from "@/lib/gemini/errors";
 import type { Cuisine } from "@/types/recipe";
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { ingredients, cuisine } = body as {
       ingredients?: string;
       cuisine?: Cuisine;
@@ -12,7 +18,12 @@ export async function POST(request: Request) {
 
     if (!ingredients?.trim()) {
       return NextResponse.json(
-        { error: "Please enter at least one ingredient." },
+        {
+          error: "Please enter at least one ingredient.",
+          title: "Missing ingredients",
+          code: "UNKNOWN",
+          retryable: false,
+        },
         { status: 400 },
       );
     }
@@ -20,7 +31,12 @@ export async function POST(request: Request) {
     const validCuisines: Cuisine[] = ["chinese", "indian", "sri-lankan"];
     if (!cuisine || !validCuisines.includes(cuisine)) {
       return NextResponse.json(
-        { error: "Please select a valid cuisine." },
+        {
+          error: "Please select a valid cuisine.",
+          title: "Invalid cuisine",
+          code: "UNKNOWN",
+          retryable: false,
+        },
         { status: 400 },
       );
     }
@@ -28,8 +44,11 @@ export async function POST(request: Request) {
     const recipe = await generateRecipeWithGemini(ingredients.trim(), cuisine);
     return NextResponse.json({ recipe });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to generate recipe";
-    return NextResponse.json({ error: message }, { status: 500 });
+    logGeminiError("POST /api/generate", error);
+    const geminiError =
+      error instanceof GeminiApiError ? error : toGeminiApiError(error);
+    return NextResponse.json(geminiErrorToPayload(geminiError), {
+      status: geminiError.statusCode,
+    });
   }
 }

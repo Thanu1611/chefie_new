@@ -1,11 +1,5 @@
-import { Suspense } from "react";
-import { LoadingState } from "@/components/ui/LoadingState";
-import { RecipesClient } from "./RecipesClient";
+import { redirect } from "next/navigation";
 
-export default function RecipesPage() {
-  return (
-    <Suspense fallback={<LoadingState message="Loading recipes..." />}>
-      <RecipesClient />
-    </Suspense>
-  );
+export default function RecipesRedirectPage() {
+  redirect("/cuisines");
 }
