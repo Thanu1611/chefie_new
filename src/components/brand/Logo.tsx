@@ -12,7 +12,7 @@ export function Logo({ size = 40, href = "/", className }: LogoProps) {
   const img = (
     <Image
       src="/logo.png"
-      alt="App logo"
+      alt="Chefie"
       width={size}
       height={size}
       className={cn("rounded-xl object-contain", className)}
