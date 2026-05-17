@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ConversationProvider,
   useConversation,
@@ -53,6 +53,11 @@ function VoiceAssistantInner({
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [connecting, setConnecting] = useState(false);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, isSpeaking]);
 
   const connected = status === "connected";
   const hasError = status === "error";
@@ -312,6 +317,7 @@ function VoiceAssistantInner({
             ))}
           </ul>
         )}
+        <div ref={transcriptEndRef} className="h-px shrink-0" aria-hidden />
       </section>
 
       <form onSubmit={handleSend} className="flex gap-2">
@@ -368,7 +374,12 @@ function VoiceAssistantFallback({
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
   const dishMode = Boolean(dish && dishContext);
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, loading]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -430,7 +441,7 @@ function VoiceAssistantFallback({
           </>
         )}
       </p>
-      <section className="card min-h-[200px] p-4">
+      <section className="card min-h-[200px] max-h-[420px] overflow-y-auto p-4">
         {loading && <LoadingState message="Chefie is thinking..." />}
         <ul className="space-y-2">
           {messages.map((msg) => (
@@ -440,6 +451,7 @@ function VoiceAssistantFallback({
             </li>
           ))}
         </ul>
+        <div ref={transcriptEndRef} className="h-px shrink-0" aria-hidden />
       </section>
       <form onSubmit={handleSend} className="flex gap-2">
         <input

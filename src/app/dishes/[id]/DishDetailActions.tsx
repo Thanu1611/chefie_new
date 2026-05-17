@@ -17,7 +17,7 @@ export function DishDetailActions({
     <button
       type="button"
       disabled={!loaded}
-      onClick={() => toggleSave(dishId, dishName)}
+      onClick={() => void toggleSave(dishId, dishName)}
       className={saved ? "btn-primary" : "btn-secondary"}
     >
       {saved ? (

@@ -47,15 +47,20 @@ export function generateSetupSql(): string {
 );`,
     `CREATE TABLE saved_dishes (
   id serial PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
   dish_id text NOT NULL,
-  saved_at timestamptz NOT NULL DEFAULT now()
+  dish_name text,
+  saved_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, dish_id)
 );`,
     `CREATE TABLE meal_plans (
   plan_id serial PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
   plan_date date NOT NULL,
   meal_type text NOT NULL,
   dish_id text NOT NULL REFERENCES dishes(dish_id) ON DELETE CASCADE,
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, plan_date, meal_type)
 );`,
     `CREATE TABLE shopping_lists (
   id serial PRIMARY KEY,
@@ -91,6 +96,9 @@ export function generateSetupSql(): string {
     "DROP POLICY IF EXISTS dishes_delete ON dishes;",
     "DROP POLICY IF EXISTS dish_steps_delete ON dish_steps;",
     "DROP POLICY IF EXISTS meal_plans_all ON meal_plans;",
+    "DROP POLICY IF EXISTS meal_plans_select ON meal_plans;",
+    "DROP POLICY IF EXISTS meal_plans_insert ON meal_plans;",
+    "DROP POLICY IF EXISTS meal_plans_delete ON meal_plans;",
     "DROP POLICY IF EXISTS shopping_lists_all ON shopping_lists;",
     "DROP POLICY IF EXISTS shopping_list_items_all ON shopping_list_items;",
     "DROP POLICY IF EXISTS shopping_list_sources_all ON shopping_list_sources;",
@@ -106,8 +114,8 @@ export function generateSetupSql(): string {
     "ALTER TABLE shopping_lists ENABLE ROW LEVEL SECURITY;",
     "ALTER TABLE shopping_list_items ENABLE ROW LEVEL SECURITY;",
     "ALTER TABLE shopping_list_sources ENABLE ROW LEVEL SECURITY;",
-    "CREATE POLICY cuisines_read ON cuisines FOR SELECT USING (true);",
-    "CREATE POLICY dishes_read ON dishes FOR SELECT USING (true);",
+    "CREATE POLICY cuisines_read ON cuisines FOR SELECT TO anon, authenticated, service_role USING (true);",
+    "CREATE POLICY dishes_read ON dishes FOR SELECT TO anon, authenticated, service_role USING (true);",
     "CREATE POLICY dish_steps_read ON dish_steps FOR SELECT USING (true);",
     "CREATE POLICY cuisines_insert ON cuisines FOR INSERT WITH CHECK (true);",
     "CREATE POLICY dishes_insert ON dishes FOR INSERT WITH CHECK (true);",
@@ -115,7 +123,9 @@ export function generateSetupSql(): string {
     "CREATE POLICY cuisines_delete ON cuisines FOR DELETE USING (true);",
     "CREATE POLICY dishes_delete ON dishes FOR DELETE USING (true);",
     "CREATE POLICY dish_steps_delete ON dish_steps FOR DELETE USING (true);",
-    "CREATE POLICY meal_plans_all ON meal_plans FOR ALL USING (true) WITH CHECK (true);",
+    "CREATE POLICY meal_plans_select ON meal_plans FOR SELECT TO authenticated USING (auth.uid() = user_id);",
+    "CREATE POLICY meal_plans_insert ON meal_plans FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);",
+    "CREATE POLICY meal_plans_delete ON meal_plans FOR DELETE TO authenticated USING (auth.uid() = user_id);",
     "CREATE POLICY shopping_lists_all ON shopping_lists FOR ALL USING (true) WITH CHECK (true);",
     "CREATE POLICY shopping_list_items_all ON shopping_list_items FOR ALL USING (true) WITH CHECK (true);",
     "CREATE POLICY shopping_list_sources_select ON shopping_list_sources FOR SELECT TO anon, authenticated, service_role USING (true);",

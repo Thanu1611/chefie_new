@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthUser } from "@/lib/supabase/server-auth";
 import { addGeneratedDishToDatabase } from "@/lib/db/insert-generated-dish";
 import type { GeneratedRecipe } from "@/types/recipe";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const recipe = body.recipe as GeneratedRecipe | undefined;
 

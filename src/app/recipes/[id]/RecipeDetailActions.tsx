@@ -12,7 +12,7 @@ export function RecipeDetailActions({ recipe }: { recipe: Recipe }) {
     <button
       type="button"
       disabled={!loaded}
-      onClick={() => toggleSave(recipe)}
+      onClick={() => void toggleSave(recipe)}
       className={saved ? "btn-primary" : "btn-secondary"}
     >
       {saved ? (
