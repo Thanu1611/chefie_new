@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAuthUser } from "@/lib/supabase/server-auth";
 import {
   elevenLabsAgentEnvName,
   getElevenLabsAgentIdFromVariant,
@@ -11,6 +12,14 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const variant =
     parseElevenLabsAgentVariant(searchParams.get("variant")) ?? "common";
+
+  if (variant === "step") {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   const agentId = getElevenLabsAgentIdFromVariant(variant);
   const apiKey = process.env.ELEVENLABS_API_KEY?.trim();
 

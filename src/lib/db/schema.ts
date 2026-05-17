@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   unique,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const cuisines = pgTable("cuisines", {
@@ -58,22 +59,32 @@ export const dishSteps = pgTable("dish_steps", {
   timerMinutes: integer("timer_minutes"),
 });
 
-export const savedDishes = pgTable("saved_dishes", {
-  id: serial("id").primaryKey(),
-  dishId: text("dish_id").notNull(),
-  savedAt: timestamp("saved_at").defaultNow().notNull(),
-});
+export const savedDishes = pgTable(
+  "saved_dishes",
+  {
+    id: serial("id").primaryKey(),
+    userId: uuid("user_id").notNull(),
+    dishId: text("dish_id").notNull(),
+    dishName: text("dish_name"),
+    savedAt: timestamp("saved_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.userId, t.dishId)],
+);
 
-export const mealPlans = pgTable("meal_plans", {
-  planId: serial("plan_id").primaryKey(),
-  planDate: date("plan_date").notNull(),
-  mealType: text("meal_type").notNull(),
-  dishId: text("dish_id")
-    .notNull()
-    .references(() => dishes.dishId, { onDelete: "cascade" }),
-  servings: integer("servings").notNull().default(2),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const mealPlans = pgTable(
+  "meal_plans",
+  {
+    planId: serial("plan_id").primaryKey(),
+    userId: uuid("user_id").notNull(),
+    planDate: date("plan_date").notNull(),
+    mealType: text("meal_type").notNull(),
+    dishId: text("dish_id")
+      .notNull()
+      .references(() => dishes.dishId, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.userId, t.planDate, t.mealType)],
+);
 
 export const shoppingLists = pgTable("shopping_lists", {
   id: serial("id").primaryKey(),

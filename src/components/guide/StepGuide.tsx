@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { StepAssistantPanel } from "@/components/guide/StepAssistantPanel";
+import { cn } from "@/lib/utils/cn";
+import type { StepAssistantContext } from "@/types/step-assistant";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -19,11 +23,42 @@ interface StepGuideProps {
 }
 
 export function StepGuide({ dish }: StepGuideProps) {
+  const { user, loading: authLoading } = useAuth();
+  const canUseAssistant = Boolean(user);
   const steps = [...dish.steps].sort((a, b) => a.stepNumber - b.stepNumber);
-  const [index, setIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [repeatKey, setRepeatKey] = useState(0);
-  const done = index >= steps.length;
-  const step: DishStep | undefined = steps[index];
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const done = currentStepIndex >= steps.length;
+  const step: DishStep | undefined = steps[currentStepIndex];
+
+  const stepContext = useMemo((): StepAssistantContext => {
+    const current = steps[currentStepIndex];
+    return {
+      dish_name: dish.dishName,
+      step_number: current?.stepNumber ?? 1,
+      step_title: current?.title ?? "",
+      instruction: current?.instruction ?? "",
+      timer_minutes:
+        current?.timerRequired && current.timerMinutes != null
+          ? current.timerMinutes
+          : null,
+      break_time_minutes: current?.breakTimeMinutes ?? 0,
+    };
+  }, [steps, currentStepIndex, dish.dishName]);
+
+  const goToNextStep = useCallback(() => {
+    setCurrentStepIndex((i) => {
+      if (i >= steps.length - 1) return i;
+      return i + 1;
+    });
+    setRepeatKey((k) => k + 1);
+  }, [steps.length]);
+
+  const goToPreviousStep = useCallback(() => {
+    setCurrentStepIndex((i) => Math.max(0, i - 1));
+    setRepeatKey((k) => k + 1);
+  }, []);
 
   if (done) {
     return (
@@ -48,12 +83,12 @@ export function StepGuide({ dish }: StepGuideProps) {
     <section className="space-y-6">
       <div className="flex items-center justify-between text-sm text-muted">
         <span>
-          Step {index + 1} of {steps.length}
+          Step {currentStepIndex + 1} of {steps.length}
         </span>
         <span>{dish.dishName}</span>
       </div>
 
-      <article className="card space-y-3 p-6 md:p-8" key={`${index}-${repeatKey}`}>
+      <article className="card space-y-3 p-6 md:p-8" key={`${currentStepIndex}-${repeatKey}`}>
         <h2 className="text-xl font-semibold text-foreground">{step.title}</h2>
         <p className="text-lg leading-relaxed text-muted md:text-xl">
           {step.instruction}
@@ -67,14 +102,17 @@ export function StepGuide({ dish }: StepGuideProps) {
       </article>
 
       {step.timerRequired && step.timerMinutes != null && step.timerMinutes > 0 && (
-        <Timer key={`timer-${index}-${repeatKey}`} initialMinutes={step.timerMinutes} />
+        <Timer
+          key={`timer-${currentStepIndex}-${repeatKey}`}
+          initialMinutes={step.timerMinutes}
+        />
       )}
 
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
+          onClick={goToPreviousStep}
+          disabled={currentStepIndex === 0}
           className="btn-secondary flex-1 disabled:opacity-40"
         >
           <IconArrowLeft size={18} />
@@ -88,13 +126,33 @@ export function StepGuide({ dish }: StepGuideProps) {
           <IconRefresh size={18} />
           Repeat step
         </button>
-        <Link href={`/voice?dishId=${dish.dishId}`} className="btn-secondary">
-          <IconMicrophone size={18} />
-          Ask assistant
-        </Link>
+        {canUseAssistant ? (
+          <button
+            type="button"
+            onClick={() => setAssistantOpen(true)}
+            disabled={authLoading}
+            className="btn-secondary"
+          >
+            <IconMicrophone size={18} />
+            Ask assistant
+          </button>
+        ) : (
+          <Link
+            href={`/login?redirect=${encodeURIComponent(`/guide/${dish.dishId}`)}&reason=step-assistant`}
+            className={cn(
+              "btn-secondary pointer-events-auto opacity-50",
+              authLoading && "pointer-events-none",
+            )}
+            title="Log in to use the step assistant"
+            aria-disabled={!authLoading}
+          >
+            <IconMicrophone size={18} />
+            Ask assistant
+          </Link>
+        )}
         <button
           type="button"
-          onClick={() => setIndex((i) => i + 1)}
+          onClick={() => setCurrentStepIndex((i) => i + 1)}
           className="btn-primary flex-1"
         >
           Next
@@ -106,6 +164,20 @@ export function StepGuide({ dish }: StepGuideProps) {
         <IconChefHat size={14} />
         Take your time — great cooking is never rushed.
       </p>
+
+      {canUseAssistant && (
+        <StepAssistantPanel
+          open={assistantOpen}
+          step={stepContext}
+          currentStepIndex={currentStepIndex}
+          totalSteps={steps.length}
+          isLastStep={currentStepIndex >= steps.length - 1}
+          canGoPrevious={currentStepIndex > 0}
+          onGoNext={goToNextStep}
+          onGoPrevious={goToPreviousStep}
+          onClose={() => setAssistantOpen(false)}
+        />
+      )}
     </section>
   );
 }

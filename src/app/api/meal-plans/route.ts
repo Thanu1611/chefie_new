@@ -3,11 +3,16 @@ import {
   addMealPlan,
   getMealPlansInRange,
   removeMealPlan,
-  updateMealPlanServings,
 } from "@/lib/supabase/meal-plan-queries";
+import { getAuthUser } from "@/lib/supabase/server-auth";
 import type { MealType } from "@/types/dish";
 
 export async function GET(request: Request) {
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -28,12 +33,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = (await request.json()) as {
       planDate?: string;
       mealType?: MealType;
       dishId?: string;
-      servings?: number;
     };
 
     if (!body.planDate || !body.mealType || !body.dishId) {
@@ -47,7 +56,6 @@ export async function POST(request: Request) {
       body.planDate,
       body.mealType,
       body.dishId,
-      body.servings,
     );
 
     if (error) {
@@ -60,33 +68,12 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PATCH(request: Request) {
-  try {
-    const body = (await request.json()) as {
-      planId?: number;
-      servings?: number;
-    };
-
-    if (body.planId == null || body.servings == null) {
-      return NextResponse.json(
-        { error: "planId and servings are required" },
-        { status: 400 },
-      );
-    }
-
-    const { plan, error } = await updateMealPlanServings(body.planId, body.servings);
-
-    if (error) {
-      return NextResponse.json({ error }, { status: 400 });
-    }
-
-    return NextResponse.json({ plan });
-  } catch {
-    return NextResponse.json({ error: "Failed to update servings" }, { status: 500 });
-  }
-}
-
 export async function DELETE(request: Request) {
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("planId");
 

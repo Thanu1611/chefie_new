@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthUser } from "@/lib/supabase/server-auth";
 import { generateRecipeWithGemini } from "@/lib/gemini/generate-recipe";
 import {
   GeminiApiError,
@@ -10,6 +11,11 @@ import type { Cuisine } from "@/types/recipe";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { ingredients, cuisine } = body as {
       ingredients?: string;

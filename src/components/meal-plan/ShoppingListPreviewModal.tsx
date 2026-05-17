@@ -214,9 +214,9 @@ export function ShoppingListPreviewModal({
 
           {showPreview && items.length > 0 && (
             <ul className="space-y-2">
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <li
-                  key={item.ingredientName}
+                  key={`${index}-${item.ingredientName}-${item.quantity}`}
                   className="card flex items-center justify-between gap-3 p-3"
                 >
                   <span className="font-medium text-foreground">

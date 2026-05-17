@@ -1,7 +1,9 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NavbarAuth } from "@/components/layout/NavbarAuth";
 import {
   IconBook2,
   IconChefHat,
@@ -55,10 +57,21 @@ export function Navbar() {
           })}
         </ul>
 
-        <Link href="/cuisines" className="btn-primary hidden lg:inline-flex">
-          <IconChefHat size={18} stroke={1.75} />
-          Start Cooking
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <Suspense
+            fallback={
+              <span className="text-sm text-muted" aria-hidden>
+                …
+              </span>
+            }
+          >
+            <NavbarAuth />
+          </Suspense>
+          {/* <Link href="/cuisines" className="btn-primary hidden lg:inline-flex">
+            <IconChefHat size={18} stroke={1.75} />
+            Start Cooking
+          </Link> */}
+        </div>
       </nav>
     </header>
   );

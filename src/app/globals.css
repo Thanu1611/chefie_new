@@ -75,6 +75,36 @@ body {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
+@keyframes step-assistant-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes step-assistant-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-assistant-sheet {
+  animation: step-assistant-slide-up 0.28s ease-out;
+}
+
+.step-assistant-fade-in {
+  animation: step-assistant-fade-in 0.2s ease-out;
+}
+
 /* Voice mic — neon equalizer (Chefie #ff9066 theme) */
 @keyframes voice-eq-pulse {
   0% {

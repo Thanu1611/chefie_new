@@ -1,50 +1,54 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { LIBRARY_STORAGE_KEY } from "@/lib/constants";
+import { useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useSavedDishes } from "@/hooks/useSavedDishes";
 import type { Recipe } from "@/types/recipe";
 
+/** Recipe saves use the same per-user library as dishes (dish_id = recipe.id). */
 export function useSavedRecipes() {
-  const [savedIds, setSavedIds] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { saved, loaded, isSaved, toggleSave, remove, isLoggedIn } =
+    useSavedDishes();
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LIBRARY_STORAGE_KEY);
-      if (raw) setSavedIds(JSON.parse(raw) as string[]);
-    } catch {
-      setSavedIds([]);
-    }
-    setLoaded(true);
-  }, []);
+  const savedIds = saved.map((s) => s.dishId);
 
-  const persist = useCallback((ids: string[]) => {
-    setSavedIds(ids);
-    localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(ids));
-  }, []);
+  const requireLogin = useCallback(() => {
+    const search =
+      typeof window !== "undefined" ? window.location.search : "";
+    const redirect = `${pathname}${search}`;
+    router.push(
+      `/login?redirect=${encodeURIComponent(redirect)}&reason=library`,
+    );
+  }, [pathname, router]);
 
-  const isSaved = useCallback(
-    (recipeId: string) => savedIds.includes(recipeId),
-    [savedIds],
-  );
-
-  const toggleSave = useCallback(
-    (recipe: Recipe) => {
-      const next = isSaved(recipe.id)
-        ? savedIds.filter((id) => id !== recipe.id)
-        : [...savedIds, recipe.id];
-      persist(next);
-      return !isSaved(recipe.id);
+  const toggleSaveRecipe = useCallback(
+    async (recipe: Recipe) => {
+      if (!user) {
+        requireLogin();
+        return false;
+      }
+      return toggleSave(recipe.id, recipe.name);
     },
-    [savedIds, isSaved, persist],
+    [user, requireLogin, toggleSave],
   );
 
-  const remove = useCallback(
+  const removeRecipe = useCallback(
     (recipeId: string) => {
-      persist(savedIds.filter((id) => id !== recipeId));
+      void remove(recipeId);
     },
-    [savedIds, persist],
+    [remove],
   );
 
-  return { savedIds, loaded, isSaved, toggleSave, remove };
+  return {
+    savedIds,
+    loaded,
+    isSaved,
+    toggleSave: toggleSaveRecipe,
+    remove: removeRecipe,
+    isLoggedIn,
+  };
 }
