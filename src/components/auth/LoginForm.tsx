@@ -4,10 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { getLoginBannerMessage } from "@/lib/auth/messages";
 import { isSafeGuestRedirect } from "@/lib/auth/protected-paths";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { hasSupabaseAuthConfig } from "@/lib/supabase/env";
+
+const MIN_PASSWORD_LENGTH = 6;
 
 export function LoginForm() {
   const router = useRouter();
@@ -44,6 +47,11 @@ export function LoginForm() {
       return;
     }
 
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -69,11 +77,11 @@ export function LoginForm() {
 
       router.push(afterLoginPath);
       router.refresh();
+      return;
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Authentication failed.";
       setError(message);
-    } finally {
       setSubmitting(false);
     }
   }
@@ -123,9 +131,28 @@ export function LoginForm() {
         </p>
       )}
 
+      <div className="relative mt-6 w-full">
+        {submitting && (
+          <div
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl bg-background/90 backdrop-blur-sm"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <IconLoader2
+              className="h-10 w-10 animate-spin text-brand"
+              stroke={1.5}
+              aria-hidden
+            />
+            <p className="text-sm font-medium text-foreground">
+              {mode === "login" ? "Signing in…" : "Creating account…"}
+            </p>
+          </div>
+        )}
+
       <form
         onSubmit={(e) => void handleSubmit(e)}
-        className="mt-6 w-full space-y-4"
+        className={`w-full space-y-4 ${submitting ? "pointer-events-none opacity-50" : ""}`}
       >
         <div>
           <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
@@ -157,26 +184,27 @@ export function LoginForm() {
               mode === "login" ? "current-password" : "new-password"
             }
             required
-            minLength={6}
+            minLength={MIN_PASSWORD_LENGTH}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="input"
             placeholder="••••••••"
+            aria-describedby="password-hint"
           />
+          <p id="password-hint" className="mt-1.5 text-xs text-muted">
+            At least {MIN_PASSWORD_LENGTH} characters
+          </p>
         </div>
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || password.length < MIN_PASSWORD_LENGTH}
           className="btn-primary w-full py-3 disabled:opacity-60"
         >
-          {submitting
-            ? "Please wait…"
-            : mode === "login"
-              ? "Log in"
-              : "Sign up"}
+          {mode === "login" ? "Log in" : "Sign up"}
         </button>
       </form>
+      </div>
 
       <p className="mt-4 text-center text-sm text-muted">
         {mode === "login" ? (
