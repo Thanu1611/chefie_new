@@ -319,7 +319,10 @@ html {
 
   .profile-avatar,
   .profile-settings-avatar-sm {
-    @apply flex shrink-0 items-center justify-center text-sm font-bold text-white transition-colors duration-300;
+    @apply flex shrink-0 items-center justify-center text-sm font-bold;
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    box-shadow: 0 4px 12px rgba(251, 192, 45, 0.28);
   }
 
   .profile-avatar {
@@ -328,27 +331,6 @@ html {
 
   .profile-settings-avatar-sm {
     @apply h-10 w-10 rounded-xl;
-  }
-
-  .profile-avatar-good,
-  .profile-settings-avatar-sm.profile-avatar-good {
-    background: #4caf50 !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.32);
-  }
-
-  .profile-avatar-mid,
-  .profile-settings-avatar-sm.profile-avatar-mid {
-    background: #fbc02d !important;
-    color: #5c524a !important;
-    box-shadow: 0 4px 12px rgba(251, 192, 45, 0.32);
-  }
-
-  .profile-avatar-bad,
-  .profile-settings-avatar-sm.profile-avatar-bad {
-    background: #d32f2f !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.32);
   }
 
   .profile-settings-avatar-lg {

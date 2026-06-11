@@ -10,11 +10,6 @@ import {
 } from "@tabler/icons-react";
 import { ProfileSettingsModal } from "@/components/auth/ProfileSettingsModal";
 import { useAuth } from "@/components/auth/AuthProvider";
-import {
-  networkStatusLabel,
-  profileAvatarStatusClass,
-  useNetworkStatus,
-} from "@/hooks/useNetworkStatus";
 import { getDisplayName, getProfileInitial } from "@/lib/auth/profile";
 import { cn } from "@/lib/utils/cn";
 
@@ -25,7 +20,6 @@ export function NavbarAuth({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const networkStatus = useNetworkStatus();
 
   useEffect(() => {
     if (!open) return;
@@ -64,8 +58,6 @@ export function NavbarAuth({ className }: { className?: string }) {
     const display = getDisplayName(user);
     const initial = getProfileInitial(user);
     const email = user.email ?? "";
-    const avatarClass = profileAvatarStatusClass(networkStatus);
-
     return (
       <>
         <div ref={menuRef} className={cn("profile-menu", className)}>
@@ -77,10 +69,7 @@ export function NavbarAuth({ className }: { className?: string }) {
             aria-haspopup="menu"
             onClick={() => setOpen((prev) => !prev)}
           >
-            <span
-              className={cn("profile-avatar", avatarClass)}
-              title={networkStatusLabel(networkStatus)}
-            >
+            <span className="profile-avatar">
               {initial}
             </span>
             <span className="profile-trigger-text hidden lg:block">
@@ -105,10 +94,7 @@ export function NavbarAuth({ className }: { className?: string }) {
               <p className="profile-dropdown-label">Active Account</p>
 
               <div className="profile-account-row">
-                <span
-                  className={cn("profile-settings-avatar-sm", avatarClass)}
-                  title={networkStatusLabel(networkStatus)}
-                >
+                <span className="profile-settings-avatar-sm">
                   {initial}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -151,10 +137,6 @@ export function NavbarAuth({ className }: { className?: string }) {
           open={settingsOpen}
           user={user}
           onClose={() => setSettingsOpen(false)}
-          onAccountDeleted={() => {
-            setSettingsOpen(false);
-            void signOut();
-          }}
         />
       </>
     );

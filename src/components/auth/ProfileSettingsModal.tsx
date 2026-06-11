@@ -25,14 +25,12 @@ interface ProfileSettingsModalProps {
   open: boolean;
   user: User;
   onClose: () => void;
-  onAccountDeleted: () => void;
 }
 
 export function ProfileSettingsModal({
   open,
   user,
   onClose,
-  onAccountDeleted,
 }: ProfileSettingsModalProps) {
   const email = user.email ?? "";
   const [displayName, setDisplayName] = useState(getDisplayName(user));
@@ -41,7 +39,6 @@ export function ProfileSettingsModal({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -164,34 +161,6 @@ export function ProfileSettingsModal({
     }
   }
 
-  async function handleDeleteAccount() {
-    const confirmed = window.confirm(
-      "Delete your account permanently? This cannot be undone.",
-    );
-    if (!confirmed) return;
-
-    setError(null);
-    setSuccess(null);
-    setDeleting(true);
-
-    try {
-      const res = await fetch("/api/auth/delete-account", {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = (await res.json()) as { error?: string };
-
-      if (!res.ok) {
-        throw new Error(data.error ?? "Could not delete account.");
-      }
-
-      onAccountDeleted();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete account.");
-      setDeleting(false);
-    }
-  }
-
   const initial = getProfileInitial(user);
 
   if (!open || !mounted) return null;
@@ -252,7 +221,7 @@ export function ProfileSettingsModal({
             <button
               type="submit"
               className="btn-primary w-full"
-              disabled={saving || deleting}
+              disabled={saving}
             >
               <IconCheck size={18} />
               {saving ? "Saving…" : "Save Changes"}
@@ -305,27 +274,13 @@ export function ProfileSettingsModal({
                 <button
                   type="button"
                   className="btn-secondary w-full"
-                  disabled={saving || deleting}
+                  disabled={saving}
                   onClick={() => void handlePasswordUpdate()}
                 >
                   Update Password
                 </button>
               </div>
             )}
-          </section>
-
-          <section className="profile-settings-danger">
-            <p className="text-xs font-bold uppercase tracking-wide text-error">
-              Danger Zone
-            </p>
-            <button
-              type="button"
-              className="btn-danger w-full"
-              disabled={saving || deleting}
-              onClick={() => void handleDeleteAccount()}
-            >
-              {deleting ? "Deleting…" : "Delete My Account"}
-            </button>
           </section>
         </div>
       </div>
