@@ -1,12 +1,12 @@
 /** Hosts allowed in next.config.ts `images.remotePatterns`. */
 export const ALLOWED_IMAGE_HOSTS = new Set([
   "images.unsplash.com",
+  "images.pexels.com",
   "upload.wikimedia.org",
   "commons.wikimedia.org",
 ]);
 
-export const DEFAULT_DISH_IMAGE_URL =
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80";
+export const DEFAULT_DISH_IMAGE_URL = "/dish-placeholder.svg";
 
 /** Use only hosts Next.js Image can load; otherwise fallback. */
 export function sanitizeRemoteImageUrl(url: string): string {

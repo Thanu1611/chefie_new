@@ -195,7 +195,7 @@ export function MealPlanningClient() {
         </div>
       </header>
 
-      {error && <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="alert-error px-4 py-2">{error}</p>}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="card p-4">
@@ -282,7 +282,7 @@ export function MealPlanningClient() {
 
       {addOpen && selectedDate && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+          className="overlay-backdrop p-4"
           role="presentation"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setAddOpen(false);

@@ -1,6 +1,7 @@
 import { and, asc, eq, ilike } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { cuisines, dishes } from "@/lib/db/schema";
+import { resolveDishImageUrl } from "@/lib/dishes/dish-images";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import type { DishSearchResult } from "@/types/meal-plan";
 import type { DishType, MealType } from "@/types/dish";
@@ -59,7 +60,7 @@ async function searchDishesWithDrizzle(
     dishType: row.dishType as DishType,
     cuisineId: row.cuisineId,
     cuisineName: row.cuisineName,
-    imageUrl: row.imageUrl,
+    imageUrl: resolveDishImageUrl(row.dishName, row.imageUrl),
     prepTime: row.prepTime,
     cookingTime: row.cookingTime,
     baseServings:
@@ -115,7 +116,7 @@ function mapSupabaseDishRow(
     dishType: row.dish_type as DishType,
     cuisineId: row.cuisine_id,
     cuisineName: cuisineMap.get(row.cuisine_id) ?? row.cuisine_id,
-    imageUrl: row.image_url,
+    imageUrl: resolveDishImageUrl(row.dish_name, row.image_url),
     prepTime: row.prep_time,
     cookingTime: row.cooking_time,
     baseServings:

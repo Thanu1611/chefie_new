@@ -1,4 +1,5 @@
 import { parseDishIngredients } from "@/lib/dishes/dish-ingredients";
+import { resolveDishImageUrl } from "@/lib/dishes/dish-images";
 import { getSupabaseAdmin } from "./server";
 import type {
   Cuisine,
@@ -57,7 +58,7 @@ function mapDish(row: DishRow, cuisine?: Cuisine): Dish {
     description: row.description,
     mealType: row.meal_type as MealType,
     dishType: row.dish_type as DishType,
-    imageUrl: row.image_url,
+    imageUrl: resolveDishImageUrl(row.dish_name, row.image_url),
     prepTime: row.prep_time,
     cookingTime: row.cooking_time,
     ingredients: parseDishIngredients(row.ingredients),

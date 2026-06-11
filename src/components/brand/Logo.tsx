@@ -15,7 +15,7 @@ export function Logo({ size = 40, href = "/", className }: LogoProps) {
       alt="Chefie"
       width={size}
       height={size}
-      className={cn("rounded-xl object-contain", className)}
+      className={cn("logo-brand object-contain", className)}
       priority
     />
   );

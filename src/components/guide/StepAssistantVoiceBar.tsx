@@ -16,7 +16,10 @@ import {
 import { VoiceMicButton, type VoiceMicMode } from "@/components/voice/VoiceMicButton";
 import { useAgentVisualizer } from "@/hooks/useAgentVisualizer";
 import { useMicVisualizer } from "@/hooks/useMicVisualizer";
-import { buildElevenLabsStepDynamicVariables } from "@/lib/voice/elevenlabs-step-variables";
+import {
+  buildElevenLabsStepContextUpdate,
+  buildElevenLabsStepDynamicVariables,
+} from "@/lib/voice/elevenlabs-step-variables";
 import {
   elevenLabsAgentEnvName,
   getStepElevenLabsAgentId,
@@ -51,7 +54,7 @@ export function StepAssistantVoiceBar(props: StepAssistantVoiceBarProps) {
 
   if (!agentId) {
     return (
-      <p className="shrink-0 border-t border-warm-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900 sm:px-5">
+      <p className="alert-warning shrink-0 border-t border-warm-200 px-4 py-2 text-center text-xs sm:px-5">
         Set {elevenLabsAgentEnvName("step")} in .env (same idea as{" "}
         {elevenLabsAgentEnvName("common")}) — text input below still works.
       </p>
@@ -245,13 +248,18 @@ function StepAssistantVoiceInner({
 
     if (!connected) return;
 
-    stepAssistantLog("step changed — refresh voice session");
-    endSession();
-    const timer = window.setTimeout(() => {
-      void beginSession();
-    }, 400);
-    return () => window.clearTimeout(timer);
-  }, [beginSession, connected, endSession, step.step_number]);
+    stepAssistantLog("step changed — push context update", step.step_number);
+    try {
+      sendContextualUpdate(buildElevenLabsStepContextUpdate(step));
+    } catch (error) {
+      stepAssistantLog("step context update failed — reconnecting", error);
+      endSession();
+      const timer = window.setTimeout(() => {
+        void beginSession();
+      }, 400);
+      return () => window.clearTimeout(timer);
+    }
+  }, [beginSession, connected, endSession, sendContextualUpdate, step]);
 
   const sendToVoiceAgent = useCallback(
     (text: string) => {
@@ -390,8 +398,8 @@ function StepAssistantVoiceInner({
         </button>
       )}
       <p className="mt-2 text-xs text-muted">
-        Talk anytime to ask about this step. Say &quot;next&quot; or &quot;done&quot; only when
-        you want to move on.
+        இந்த படி பற்றி எப்போதும் கேளுங்கள். அடுத்த படிக்கு செல்ல &quot;அடுத்து&quot; அல்லது
+        &quot;தயார்&quot; என்று சொல்லுங்கள்.
       </p>
     </div>
   );

@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { colors } from "@/lib/theme/colors";
 import type { ShoppingListItem } from "@/types/meal-plan";
 import type { ShoppingListLine } from "@/lib/meal-plan/shopping-list-merge";
 
@@ -69,25 +70,25 @@ export function downloadShoppingListImage(
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  ctx.fillStyle = "#fffaf7";
+  ctx.fillStyle = colors.background;
   ctx.fillRect(0, 0, width, height);
 
-  ctx.fillStyle = "#ff9066";
+  ctx.fillStyle = colors.primary;
   ctx.font = "bold 22px system-ui, sans-serif";
   ctx.fillText("Chefie Shopping List", padding, padding + 24);
 
   ctx.font = "15px system-ui, sans-serif";
-  ctx.fillStyle = "#2d2420";
+  ctx.fillStyle = colors.foreground;
 
   if (items.length === 0) {
-    ctx.fillStyle = "#7a6b63";
+    ctx.fillStyle = colors.muted;
     ctx.fillText("No items in your list.", padding, padding + titleHeight + 8);
   } else {
     let y = padding + titleHeight;
     for (const item of items) {
       const mark = item.purchased ? "✓" : "○";
       const qty = item.quantity ? ` (${item.quantity})` : "";
-      ctx.fillStyle = item.purchased ? "#7a6b63" : "#2d2420";
+      ctx.fillStyle = item.purchased ? colors.muted : colors.foreground;
       ctx.fillText(`${mark}  ${item.ingredientName}${qty}`, padding, y);
       y += lineHeight;
     }

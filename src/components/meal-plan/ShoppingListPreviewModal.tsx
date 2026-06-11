@@ -74,7 +74,7 @@ export function ShoppingListPreviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className="overlay-backdrop"
       role="dialog"
       aria-modal="true"
       aria-labelledby="shopping-preview-title"
@@ -141,7 +141,7 @@ export function ShoppingListPreviewModal({
               </label>
             </div>
             {!hasGenerated && rangeError && (
-              <p className="text-sm text-red-600">{rangeError}</p>
+              <p className="text-sm text-error">{rangeError}</p>
             )}
             {!showPreview && (
               <button
@@ -166,12 +166,10 @@ export function ShoppingListPreviewModal({
             )}
           </section>
 
-          {error && (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-          )}
+          {error && <p className="alert-error px-3 py-2">{error}</p>}
 
           {success && (
-            <p className="flex items-center gap-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
+            <p className="alert-success px-3 py-2">
               <IconCheck size={18} />
               {success}
             </p>

@@ -21,8 +21,8 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <div className="card flex flex-col items-center gap-3 p-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
-        <IconAlertCircle className="h-7 w-7 text-red-500" stroke={1.5} />
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-error-light">
+        <IconAlertCircle className="h-7 w-7 text-error" stroke={1.5} />
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
       <p className="max-w-md text-sm leading-relaxed text-muted">{message}</p>

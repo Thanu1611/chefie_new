@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   IconRobot,
   IconSend,
-  IconSparkles,
+  IconRobot,
   IconUser,
   IconX,
 } from "@tabler/icons-react";
@@ -19,7 +19,9 @@ import {
   type StepNavigationDirection,
 } from "@/lib/voice/step-navigation-intent";
 import { stepAssistantLog } from "@/lib/voice/step-assistant-speech";
+import { StepTimer } from "@/components/guide/StepTimer";
 import { cn } from "@/lib/utils/cn";
+import type { StepTimerControls } from "@/hooks/useStepTimer";
 import type {
   StepAssistantContext,
   StepAssistantMessage,
@@ -34,6 +36,7 @@ interface ChatMessage {
 interface StepAssistantPanelProps {
   open: boolean;
   step: StepAssistantContext;
+  timer?: StepTimerControls;
   currentStepIndex: number;
   totalSteps: number;
   isLastStep: boolean;
@@ -46,6 +49,7 @@ interface StepAssistantPanelProps {
 export function StepAssistantPanel({
   open,
   step,
+  timer,
   currentStepIndex,
   totalSteps,
   isLastStep,
@@ -59,6 +63,7 @@ export function StepAssistantPanel({
     <StepAssistantModal
       open={open}
       step={step}
+      timer={timer}
       currentStepIndex={currentStepIndex}
       totalSteps={totalSteps}
       isLastStep={isLastStep}
@@ -73,6 +78,7 @@ export function StepAssistantPanel({
 function StepAssistantModal({
   open,
   step,
+  timer,
   currentStepIndex,
   totalSteps,
   isLastStep,
@@ -147,13 +153,13 @@ function StepAssistantModal({
 
       if (direction === "previous") {
         if (!canGoPrevious) {
-          appendMessage("assistant", "You're already on the first step.");
+          appendMessage("assistant", "நீங்கள் ஏற்கனவே முதல் படியில் இருக்கிறீர்கள்.");
           navCooldownRef.current = false;
           return;
         }
         appendMessage(
           "assistant",
-          `Going back to Step ${currentStepIndex}…`,
+          `${currentStepIndex}வது படிக்கு திரும்புகிறோம்…`,
         );
         window.setTimeout(() => {
           onGoPrevious();
@@ -165,7 +171,7 @@ function StepAssistantModal({
       if (isLastStep) {
         appendMessage(
           "assistant",
-          "This is the final step. Your dish is almost ready!",
+          "இது கடைசி படி. உங்கள் dish ஏறக்குறைய தயார்!",
         );
         navCooldownRef.current = false;
         return;
@@ -173,7 +179,7 @@ function StepAssistantModal({
 
       appendMessage(
         "assistant",
-        `Nice work on Step ${step.step_number}! Moving to the next step…`,
+        `${step.step_number}வது படி நன்றாக முடிந்தது! அடுத்த படிக்கு செல்கிறோம்…`,
       );
       window.setTimeout(() => {
         onGoNext();
@@ -221,7 +227,7 @@ function StepAssistantModal({
       return (
         data.reply ??
         data.error ??
-        "I couldn't answer that — try asking about this step's technique or timing."
+        "பதில் சொல்ல முடியவில்லை — இந்த படியின் technique அல்லது timing பற்றி கேளுங்கள்."
       );
     },
     [step, stepKey],
@@ -249,7 +255,7 @@ function StepAssistantModal({
         stepAssistantLog("chat request failed", error);
         appendMessage(
           "assistant",
-          "Something went wrong. Please try asking again about this step.",
+          "ஏதோ தவறு நடந்தது. இந்த படி பற்றி மீண்டும் கேளுங்கள்.",
         );
       } finally {
         setLoading(false);
@@ -268,7 +274,7 @@ function StepAssistantModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className="overlay-backdrop"
       role="dialog"
       aria-modal="true"
       aria-labelledby="step-assistant-title"
@@ -289,7 +295,7 @@ function StepAssistantModal({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15">
-                <IconSparkles className="h-5 w-5 text-brand" />
+                <IconRobot className="h-5 w-5 text-brand" />
               </span>
               <p className="text-xs font-medium uppercase tracking-wide text-brand">
                 Step {currentStepIndex + 1} of {totalSteps}
@@ -312,6 +318,8 @@ function StepAssistantModal({
             </button>
           </div>
         </header>
+
+        {timer?.hasTimer ? <StepTimer timer={timer} variant="compact" /> : null}
 
         <div
           ref={scrollRef}

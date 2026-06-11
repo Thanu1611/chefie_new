@@ -7,8 +7,8 @@ import {
   IconList,
   IconMicrophone,
   IconSearch,
-  IconSparkles,
 } from "@tabler/icons-react";
+import { GenerateIcon } from "@/components/icons/GenerateIcon";
 import { Logo } from "@/components/brand/Logo";
 import { GenerateRecipePopup } from "@/components/home/GenerateRecipePopup";
 
@@ -38,7 +38,7 @@ const FEATURES = [
     cta: "Try voice",
   },
   {
-    icon: IconSparkles,
+    icon: GenerateIcon,
     title: "AI recipe generator",
     description:
       "Enter what you have in your kitchen and get a custom recipe matched to your chosen cuisine.",
@@ -107,28 +107,21 @@ export default function HomePage() {
               Start Cooking
             </Link>
             <Link href="/generate" className="btn-secondary text-base">
-              <IconSparkles size={20} />
+              <GenerateIcon size={20} stroke={1.75} />
               Generate a recipe
             </Link>
           </div>
         </div>
 
-        <div className="card relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand/20 via-warm-100 to-warm-50">
+        <div className="card relative aspect-[4/3] overflow-hidden bg-warm-50">
           <Image
-            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=900&q=80"
-            alt="Cooking in a warm kitchen"
+            src="/home_page.png"
+            alt="Warm kitchens, real recipes — cooking with Chefie"
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/90 p-4 backdrop-blur">
-            <p className="text-sm font-medium text-foreground">Warm kitchens, real recipes</p>
-            <p className="text-xs text-muted">
-              Predefined dishes · Voice help · Timers · AI generator
-            </p>
-          </div>
         </div>
       </section>
 
@@ -165,11 +158,11 @@ export default function HomePage() {
               href={href}
               className="card-hover flex flex-col gap-3 p-5"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/15 text-brand">
-                <Icon size={22} stroke={1.75} />
+              <span className="icon-badge">
+                <Icon size={24} stroke={1.75} />
               </span>
-              <h3 className="font-semibold text-foreground">{title}</h3>
-              <p className="flex-1 text-sm leading-relaxed text-muted">
+              <h3 className="card-title">{title}</h3>
+              <p className="card-description flex-1 text-sm">
                 {description}
               </p>
             </Link>
@@ -178,15 +171,13 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="card bg-gradient-to-br from-brand/8 via-warm-50 to-surface p-6 md:p-10">
+      <section className="card-section-warm p-6 md:p-10">
         <h2 className="text-2xl font-bold text-foreground">How it works</h2>
         <p className="mt-1 text-muted">Three simple steps to your next meal.</p>
         <ol className="mt-8 grid gap-6 md:grid-cols-3">
           {STEPS.map(({ step, title, text }) => (
             <li key={step} className="space-y-2">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
-                {step}
-              </span>
+              <span className="step-badge">{step}</span>
               <h3 className="font-semibold text-foreground">{title}</h3>
               <p className="text-sm leading-relaxed text-muted">{text}</p>
             </li>

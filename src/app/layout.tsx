@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { AppShell } from "@/components/layout/AppShell";
+import { DEFAULT_LANGUAGE } from "@/lib/i18n/language";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full`}>
+    <html lang={DEFAULT_LANGUAGE} className={`${geistSans.variable} h-full`}>
       <body className="flex min-h-full flex-col antialiased">
         <AuthProvider>
           <AppShell>{children}</AppShell>

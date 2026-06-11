@@ -30,7 +30,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           sizes="(max-width: 768px) 100vw, 33vw"
         />
         {recipe.isVegetarian && (
-          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-green-700 shadow-sm">
+          <span className="badge-fresh absolute left-3 top-3 gap-1 bg-surface/95 px-2 py-1 shadow-sm">
             <IconLeaf size={14} />
             Veg
           </span>

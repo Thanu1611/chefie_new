@@ -1,3 +1,5 @@
+import { DEFAULT_SPEECH_LANG } from "@/lib/i18n/language";
+
 const LOG_PREFIX = "[StepAssistant]";
 
 export function stepAssistantLog(
@@ -79,6 +81,7 @@ export function speakWithBrowserTts(
 
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = DEFAULT_SPEECH_LANG;
   utterance.rate = 0.95;
   utterance.pitch = 1;
   utterance.onend = () => {

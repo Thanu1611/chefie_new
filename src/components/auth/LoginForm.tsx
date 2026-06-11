@@ -115,7 +115,7 @@ export function LoginForm() {
 
       {error && (
         <p
-          className="mt-4 w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-800"
+          className="alert-error mt-4 w-full px-4 py-3 text-center"
           role="alert"
         >
           {error}

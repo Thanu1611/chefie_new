@@ -3,14 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  IconSparkles,
   IconClock,
   IconChefHat,
   IconBookmarkPlus,
 } from "@tabler/icons-react";
-import { CUISINES } from "@/lib/constants";
+import { GenerateIcon } from "@/components/icons/GenerateIcon";
+import { CUISINES, DEFAULT_CUISINE } from "@/lib/constants";
 import type { Cuisine, GeneratedRecipe } from "@/types/recipe";
 import type { GeminiErrorCode } from "@/lib/gemini/errors";
+import { DishImage } from "@/components/dishes/DishImage";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
 
@@ -25,7 +26,7 @@ type AddStatus = "idle" | "loading" | "success" | "duplicate" | "error";
 
 export default function GeneratePage() {
   const [ingredients, setIngredients] = useState("");
-  const [cuisine, setCuisine] = useState<Cuisine>("chinese");
+  const [cuisine, setCuisine] = useState<Cuisine>(DEFAULT_CUISINE);
   const [result, setResult] = useState<GeneratedRecipe | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<GenerateError | null>(null);
@@ -153,11 +154,12 @@ export default function GeneratePage() {
     <div className="mx-auto max-w-2xl space-y-8">
       <header className="text-center">
         <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/15">
-          <IconSparkles className="h-7 w-7 text-brand" />
+          <GenerateIcon className="h-7 w-7 text-brand" stroke={1.75} />
         </span>
         <h1 className="text-3xl font-bold text-foreground">AI Recipe Generator</h1>
         <p className="mt-2 text-muted">
-          Enter what you have in your kitchen and AI will suggest a custom recipe.
+          Enter what you have in your kitchen and AI will suggest a custom recipe
+          with a unique AI-generated food photo.
         </p>
       </header>
 
@@ -193,12 +195,14 @@ export default function GeneratePage() {
         </fieldset>
 
         <button type="submit" className="btn-primary w-full" disabled={loading}>
-          <IconSparkles size={18} />
+          <GenerateIcon size={18} stroke={1.75} />
           {loading ? "Generating..." : "Generate Recipe"}
         </button>
       </form>
 
-      {loading && <LoadingState message="Crafting your recipe..." />}
+      {loading && (
+        <LoadingState message="Crafting your recipe and finding a matching dish photo…" />
+      )}
 
       {error && (
         <ErrorState
@@ -215,9 +219,27 @@ export default function GeneratePage() {
       )}
 
       {result && (
-        <article className="card space-y-5 p-6">
+        <article className="card overflow-hidden">
+          <div className="relative aspect-[16/10] w-full bg-warm-100">
+            <DishImage
+              src={result.image_url}
+              alt={result.dish_name}
+              sizes="(max-width: 768px) 100vw, 42rem"
+              priority
+            />
+          </div>
+          <div className="space-y-5 p-6">
           <header>
             <h2 className="text-2xl font-bold text-foreground">{result.dish_name}</h2>
+            {result.image_ai_generated ? (
+              <p className="mt-1 text-xs font-medium text-brand">
+                AI-generated dish photo
+              </p>
+            ) : result.image_matched_online ? (
+              <p className="mt-1 text-xs font-medium text-brand">
+                Photo matched to your recipe
+              </p>
+            ) : null}
             <p className="mt-1 text-sm text-muted">{result.description}</p>
             <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted">
               {result.difficulty && (
@@ -288,11 +310,11 @@ export default function GeneratePage() {
               <p
                 className={`text-center text-sm ${
                   addStatus === "success"
-                    ? "text-green-700"
+                    ? "text-secondary-dark"
                     : addStatus === "duplicate"
-                      ? "text-amber-800"
+                      ? "text-warning-dark"
                       : addStatus === "error"
-                        ? "text-red-700"
+                        ? "text-error"
                         : "text-muted"
                 }`}
               >
@@ -310,6 +332,7 @@ export default function GeneratePage() {
                 </Link>
               </p>
             )}
+          </div>
           </div>
         </article>
       )}

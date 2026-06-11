@@ -1,3 +1,5 @@
+import { DEFAULT_LOCALE } from "@/lib/i18n/language";
+
 /** True when dateKey is strictly before today (YYYY-MM-DD). */
 export function isPastDateKey(dateKey: string, todayKey = toDateKey(new Date())): boolean {
   return dateKey < todayKey;
@@ -44,11 +46,11 @@ export function endOfWeek(date: Date): Date {
 }
 
 export function formatMonthYear(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  return date.toLocaleDateString(DEFAULT_LOCALE, { month: "long", year: "numeric" });
 }
 
 export function formatShortDate(key: string): string {
-  return parseDateKey(key).toLocaleDateString("en-US", {
+  return parseDateKey(key).toLocaleDateString(DEFAULT_LOCALE, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -56,7 +58,7 @@ export function formatShortDate(key: string): string {
 }
 
 export function formatDisplayDate(key: string): string {
-  return parseDateKey(key).toLocaleDateString("en-US", {
+  return parseDateKey(key).toLocaleDateString(DEFAULT_LOCALE, {
     weekday: "long",
     month: "long",
     day: "numeric",

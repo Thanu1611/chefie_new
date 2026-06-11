@@ -1,3 +1,4 @@
+import { GEMINI_TAMIL_INSTRUCTION } from "@/lib/i18n/language";
 import { generateWithGemini, getGeminiApiKey } from "./client";
 import { logGeminiError } from "./errors";
 import type {
@@ -28,7 +29,9 @@ If the user made a mistake, first reassure them, then give recovery steps.
 
 The user may interrupt mid-explanation with a new question — answer that question directly.
 Keep answers short (2–4 sentences), clear, supportive, and easy to read aloud.
-Do not advance to the next step unless they explicitly say next, done, completed, finished, or ready.`;
+Do not advance to the next step unless they explicitly say next, done, completed, finished, or ready.
+
+${GEMINI_TAMIL_INSTRUCTION}`;
 }
 
 function formatHistory(history: StepAssistantMessage[]): string {
@@ -40,7 +43,7 @@ function formatHistory(history: StepAssistantMessage[]): string {
 }
 
 export function getStepAssistantWelcome(step: StepAssistantContext): string {
-  return `Hi 👩‍🍳\nYou're currently on Step ${step.step_number}: ${step.step_title}.\nAsk me anything about this step — timing, texture, mistakes, or cooking tips.`;
+  return `வணக்கம் 👩‍🍳\nநீங்கள் இப்போது ${step.step_number}வது படி: ${step.step_title}.\nஇந்த படி பற்றி எதுவும் கேளுங்கள் — நேரம், texture, தவறுகள், சமையல் குறிப்புகள்.`;
 }
 
 export async function getStepCookingHelp(
@@ -76,16 +79,16 @@ function getStaticStepHelp(question: string, step: StepAssistantContext): string
     );
 
   if (isMistake) {
-    return `No worries, we can fix this — it happens while cooking.\n\nFor "${step.step_title}": pause the heat if anything is still on the stove. Taste and check texture before continuing. If something smells burnt or looks black, remove only the burnt part and start that piece again on gentler heat.\n\nTell me exactly what looks or smells off and I'll suggest the safest recovery for this step.`;
+    return `"${step.step_title}" படியில் கவலை வேண்டாம் — சமைக்கும்போது இது நடக்கும்.\n\nஅடுப்பில் ஏதாவது இருந்தால் heat குறையுங்கள். தொடர்வதற்கு முன் சுவை பார்த்து texture சரிபாருங்கள். எரிந்த வாசனை அல்லது கருப்பாகத் தெரிந்தால், எரிந்த பகுதியை மட்டும் எடுத்து மெதுவான heat-ல் மீண்டும் செய்யுங்கள்.\n\nஎன்ன தவறாகத் தெரிகிறது என்று சொல்லுங்கள் — இந்த படிக்கு பாதுகாப்பான தீர்வு சொல்கிறேன்.`;
   }
 
   if (/blanch/i.test(q)) {
-    return `Blanching means briefly boiling food, then cooling it fast in ice water. For this step, cook just until bright and tender — usually 1–3 minutes — then stop the cooking with cold water so it stays vibrant.`;
+    return `Blanching என்றால் சிறிது நேரம் boil செய்து, உடனே ice water-ல் குளிர வைப்பது. இந்த படியில் பொருள் பிரகாசமாகவும் மென்மையாகவும் ஆகும் வரை — பொதுவாக 1–3 நிமிடம் — வேகவிட்டு, cold water-ல் வேகம் நிறுத்துங்கள்.`;
   }
 
-  return `For Step ${step.step_number} (${step.step_title}):\n\n• Follow: ${step.instruction}\n• Work slowly and check texture as you go.\n${
+  return `${step.step_number}வது படி (${step.step_title}):\n\n• ${step.instruction}\n• மெதுவாக செய்து texture சரிபாருங்கள்.\n${
     step.timer_minutes
-      ? `• Use the ${step.timer_minutes}-minute timer when you start timed work.\n`
+      ? `• timed work தொடங்கும்போது ${step.timer_minutes} நிமிட timer பயன்படுத்துங்கள்.\n`
       : ""
-  }Ask me about technique, timing, or what "done" should look like for this step.`;
+  }technique, timing, அல்லது "done" எப்படி இருக்கும் என்று கேளுங்கள்.`;
 }

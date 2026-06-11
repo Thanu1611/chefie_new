@@ -22,6 +22,7 @@ export function DishImage({
 }: DishImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src);
   const [usePlaceholder, setUsePlaceholder] = useState(false);
+  const isDataUrl = currentSrc.startsWith("data:");
 
   useEffect(() => {
     setCurrentSrc(src);
@@ -44,7 +45,7 @@ export function DishImage({
       sizes={sizes}
       priority={priority}
       onError={handleError}
-      unoptimized={usePlaceholder}
+      unoptimized={usePlaceholder || isDataUrl}
     />
   );
 }

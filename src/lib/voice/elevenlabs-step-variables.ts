@@ -1,3 +1,4 @@
+import { GEMINI_TAMIL_INSTRUCTION } from "@/lib/i18n/language";
 import type { StepAssistantContext } from "@/types/step-assistant";
 
 /** Instructions for the step agent (mirror COMMON agent: conversational + interruptible). */
@@ -17,7 +18,8 @@ function buildStepAssistantInstructions(step: StepAssistantContext): string {
     "Help ONLY with the current cooking step.",
     "The user may interrupt while you speak — stop immediately, listen, and answer their new question about THIS step.",
     "Do NOT advance to the next step unless they clearly say: next, next step, done, completed, finished, or ready.",
-    "Answers: 2–4 short spoken sentences. Clear, warm, step-specific.",
+    "Answers: 2–4 short spoken sentences in Tamil. Clear, warm, step-specific.",
+    GEMINI_TAMIL_INSTRUCTION,
     `Current: Step ${step.step_number} — ${step.step_title}.`,
     step.instruction,
     timerLine,
@@ -25,6 +27,18 @@ function buildStepAssistantInstructions(step: StepAssistantContext): string {
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+/** Push new step context without reconnecting the voice session. */
+export function buildElevenLabsStepContextUpdate(
+  step: StepAssistantContext,
+): string {
+  const vars = buildElevenLabsStepDynamicVariables(step);
+  return `[STEP CHANGE] User moved to step ${step.step_number} of ${step.dish_name}.
+
+${vars.assistant_instructions}
+
+Briefly greet the user and introduce this step in Tamil (2–3 short spoken sentences). Help only with this step.`;
 }
 
 /** Dynamic variables — match field names in your ElevenLabs step agent dashboard. */

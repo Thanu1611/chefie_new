@@ -15,8 +15,9 @@ import {
   IconCircleCheck,
   IconClock,
 } from "@tabler/icons-react";
+import { useStepTimer } from "@/hooks/useStepTimer";
 import type { DishStep, DishWithSteps } from "@/types/dish";
-import { Timer } from "./Timer";
+import { StepTimer } from "./StepTimer";
 
 interface StepGuideProps {
   dish: DishWithSteps;
@@ -60,6 +61,12 @@ export function StepGuide({ dish }: StepGuideProps) {
     setRepeatKey((k) => k + 1);
   }, []);
 
+  const timerMinutes =
+    step?.timerRequired && step.timerMinutes != null && step.timerMinutes > 0
+      ? step.timerMinutes
+      : null;
+  const stepTimer = useStepTimer(done ? null : timerMinutes, repeatKey);
+
   if (done) {
     return (
       <section className="flex flex-col items-center gap-6 py-12 text-center">
@@ -101,12 +108,7 @@ export function StepGuide({ dish }: StepGuideProps) {
         )}
       </article>
 
-      {step.timerRequired && step.timerMinutes != null && step.timerMinutes > 0 && (
-        <Timer
-          key={`timer-${currentStepIndex}-${repeatKey}`}
-          initialMinutes={step.timerMinutes}
-        />
-      )}
+      {!assistantOpen ? <StepTimer timer={stepTimer} variant="full" /> : null}
 
       <div className="flex flex-wrap gap-3">
         <button
@@ -169,6 +171,7 @@ export function StepGuide({ dish }: StepGuideProps) {
         <StepAssistantPanel
           open={assistantOpen}
           step={stepContext}
+          timer={stepTimer}
           currentStepIndex={currentStepIndex}
           totalSteps={steps.length}
           isLastStep={currentStepIndex >= steps.length - 1}

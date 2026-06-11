@@ -1,3 +1,4 @@
+import { GEMINI_TAMIL_INSTRUCTION } from "@/lib/i18n/language";
 import { generateWithGemini, getGeminiApiKey } from "./client";
 import { logGeminiError } from "./errors";
 
@@ -27,7 +28,9 @@ ${dishContext}
 
 The user asks: "${question}"
 
-Give a concise, practical answer in 3-5 short bullet points. Only help with THIS dish. No other recipes. No intro fluff.`;
+Give a concise, practical answer in 3-5 short bullet points. Only help with THIS dish. No other recipes. No intro fluff.
+
+${GEMINI_TAMIL_INSTRUCTION}`;
 
   try {
     const { text } = await generateWithGemini({ prompt, temperature: 0.4 });
@@ -48,7 +51,9 @@ export async function getCookingFix(topic: string): Promise<string> {
 
   const prompt = `You are Chefie, a friendly cooking assistant. The user has this problem: "${label}".
 
-Give a concise, practical fix in 3-5 short bullet points. Be specific and actionable. No intro fluff.`;
+Give a concise, practical fix in 3-5 short bullet points. Be specific and actionable. No intro fluff.
+
+${GEMINI_TAMIL_INSTRUCTION}`;
 
   try {
     const { text } = await generateWithGemini({ prompt, temperature: 0.5 });

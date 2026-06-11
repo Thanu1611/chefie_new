@@ -1,8 +1,9 @@
 import type { MealType, DishType } from "@/types/dish";
 import { getDishImageUrl } from "@/lib/dishes/dish-images";
-const CHINESE_IMG = "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80";
-const INDIAN_IMG = "https://images.unsplash.com/photo-1585937421612-70a008592f82?w=800&q=80";
-const SRI_IMG = "https://images.unsplash.com/photo-1604908176997-43162f4d978e?w=800&q=80";
+
+const CHINESE_IMG = "/dishes/vegetable-fried-rice.jpg";
+const INDIAN_IMG = "/dishes/masala-dosa.jpg";
+const SRI_IMG = "/dishes/lamprais.jpg";
 
 export const CUISINE_SEED = [
   {
@@ -413,16 +414,39 @@ const DISH_CATALOG: Record<
           ],
         },
         {
-          dishName: "Poha",
-          description: "Flattened rice with peanuts, turmeric, and fresh coriander.",
+          dishName: "Curd Rice",
+          description:
+            "Creamy South Indian thayir sadam with yogurt, tempering, and pomegranate garnish.",
           prepTime: 10,
-          cookingTime: 15,
+          cookingTime: 25,
+          imageUrl: "/dishes/curd-rice.jpg",
           steps: [
-            { title: "Rinse poha", instruction: "Rinse thick poha and drain well.", breakTimeMinutes: 3 },
-            { title: "Temper", instruction: "Fry mustard, peanuts, and curry leaves.", timerRequired: true, timerMinutes: 4 },
-            { title: "Cook", instruction: "Add poha, turmeric, and steam briefly.", timerRequired: true, timerMinutes: 5 },
-            { title: "Finish", instruction: "Squeeze lemon and add coriander.", breakTimeMinutes: 1 },
-            { title: "Serve", instruction: "Serve warm with sev on top." },
+            {
+              title: "Cook rice",
+              instruction: "Cook short-grain rice very soft with extra water until mashable.",
+              timerRequired: true,
+              timerMinutes: 20,
+            },
+            {
+              title: "Cool and mash",
+              instruction: "Cool rice slightly and mash gently until creamy.",
+              breakTimeMinutes: 10,
+            },
+            {
+              title: "Mix curd",
+              instruction: "Fold in fresh yogurt, salt, and a little milk until smooth.",
+              breakTimeMinutes: 2,
+            },
+            {
+              title: "Temper",
+              instruction: "Fry mustard seeds, urad dal, curry leaves, and green chili in ghee.",
+              timerRequired: true,
+              timerMinutes: 3,
+            },
+            {
+              title: "Serve",
+              instruction: "Pour tempering over rice; top with pomegranate and coriander.",
+            },
           ],
         },
       ],

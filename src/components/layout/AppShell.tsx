@@ -6,11 +6,11 @@ import { NavbarAuth } from "./NavbarAuth";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="relative flex min-h-dvh flex-col">
       <Navbar />
 
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 border-b border-warm-200 bg-surface/95 backdrop-blur md:hidden">
+      <header className="navbar-shell sticky top-0 z-40 border-b md:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Logo size={62} />
 
@@ -26,6 +26,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       <MobileBottomNav />
-    </>
+    </div>
   );
 }

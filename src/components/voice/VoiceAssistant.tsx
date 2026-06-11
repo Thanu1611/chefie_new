@@ -233,7 +233,7 @@ function VoiceAssistantInner({
       )}
 
       {(hasError || statusMessage) && !connected && (
-        <section className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <section className="alert-error flex items-start gap-2 p-4">
           <IconAlertCircle className="mt-0.5 shrink-0" size={18} />
           <p>{statusMessage ?? "Voice connection failed. See messages below."}</p>
         </section>
@@ -428,9 +428,9 @@ function VoiceAssistantFallback({
 
   return (
     <section className="space-y-4">
-      <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+      <p className="alert-warning">
         ElevenLabs agent ID not configured. Set{" "}
-        <code className="rounded bg-amber-100 px-1">
+        <code className="rounded bg-warning-light px-1">
           {elevenLabsAgentEnvName(agentVariant)}
         </code>{" "}
         in .env to enable voice.

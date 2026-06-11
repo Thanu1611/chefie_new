@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { IconChevronDown, IconSparkles } from "@tabler/icons-react";
+import { IconChevronDown } from "@tabler/icons-react";
+import { GenerateIcon } from "@/components/icons/GenerateIcon";
 
 const STORAGE_KEY = "chefie-generate-popup-minimized";
 
@@ -39,7 +40,7 @@ export function GenerateRecipePopup() {
         aria-label="Open recipe generator"
         title="Generate custom recipe"
       >
-        <IconSparkles size={22} stroke={1.75} />
+        <GenerateIcon size={22} stroke={1.75} />
       </button>
     );
   }
@@ -52,7 +53,7 @@ export function GenerateRecipePopup() {
     >
       <div className="mb-3 flex items-start justify-between gap-2">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand/15 text-brand">
-          <IconSparkles size={18} stroke={1.75} />
+          <GenerateIcon size={18} stroke={1.75} />
         </span>
         <button
           type="button"
@@ -70,7 +71,7 @@ export function GenerateRecipePopup() {
       </p>
 
       <Link href="/generate" className="btn-primary mt-3 w-full justify-center text-xs">
-        <IconSparkles size={16} />
+        <GenerateIcon size={16} stroke={1.75} />
         Generate custom recipe
       </Link>
     </aside>

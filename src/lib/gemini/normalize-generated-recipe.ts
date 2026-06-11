@@ -1,6 +1,5 @@
 import { normalizeGeneratedIngredients } from "@/lib/dishes/generated-ingredient";
 import { appCuisineToDbId } from "@/lib/dishes/cuisine-map";
-import { sanitizeRemoteImageUrl } from "@/lib/images/remote-image";
 import type { DishType, MealType } from "@/types/dish";
 import type { Cuisine, GeneratedDishStep, GeneratedRecipe } from "@/types/recipe";
 
@@ -142,9 +141,12 @@ export function normalizeGeneratedRecipe(
   );
   const prepTime = asNumber(r.prep_time ?? r.prepTime, Math.max(5, Math.round(cookingTime * 0.3)));
 
+  const imageSubjectEn = asString(r.image_subject_en ?? r.imageSubjectEn);
+
   return {
     dish_name: dishName,
     ...(dishSlug ? { dish_slug: dishSlug } : {}),
+    ...(imageSubjectEn ? { image_subject_en: imageSubjectEn } : {}),
     description: asString(
       r.description,
       `A ${parseMealType(r.meal_type ?? r.mealType).toLowerCase()} recipe using your ingredients.`,
@@ -153,9 +155,7 @@ export function normalizeGeneratedRecipe(
     cuisine: selectedCuisine,
     meal_type: parseMealType(r.meal_type ?? r.mealType),
     dish_type: parseDishType(r.dish_type ?? r.dishType, ingredientsText),
-    image_url: sanitizeRemoteImageUrl(
-      asString(r.image_url ?? r.imageUrl, ""),
-    ),
+    image_url: "",
     prep_time: prepTime,
     cooking_time: cookingTime,
     ingredients,

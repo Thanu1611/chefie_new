@@ -181,12 +181,10 @@ export function ShoppingListClient() {
 
       {loading && <LoadingState message="Loading shopping list…" />}
 
-      {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
-      )}
+      {error && <p className="alert-error px-4 py-2">{error}</p>}
 
       {success && (
-        <p className="flex items-center gap-2 rounded-xl bg-green-50 px-4 py-2 text-sm text-green-800">
+        <p className="alert-success px-4 py-2">
           <IconCheck size={18} />
           {success}
         </p>
@@ -286,7 +284,7 @@ function ShoppingRow({
         type="button"
         onClick={() => void onDelete(item.id)}
         disabled={deleting}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-error-light hover:text-error disabled:opacity-50"
         aria-label={`Delete ${item.ingredientName}`}
       >
         <IconTrash size={18} />

@@ -9,6 +9,9 @@ import {
 } from "@/lib/gemini/errors";
 import type { Cuisine } from "@/types/recipe";
 
+/** Recipe + AI image generation can take up to ~60s. */
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getAuthUser();

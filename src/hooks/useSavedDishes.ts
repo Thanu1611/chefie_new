@@ -97,7 +97,7 @@ export function useSavedDishes() {
     async (dishId: string) => {
       if (!user) {
         requireLogin();
-        return;
+        return false;
       }
       const res = await fetch(
         `/api/library?dishId=${encodeURIComponent(dishId)}`,
@@ -105,7 +105,9 @@ export function useSavedDishes() {
       );
       if (res.ok) {
         setSaved((prev) => prev.filter((s) => s.dishId !== dishId));
+        return true;
       }
+      return false;
     },
     [user, requireLogin],
   );

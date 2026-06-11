@@ -82,4 +82,10 @@ export interface GeneratedRecipe {
   difficulty?: Difficulty;
   /** UI cuisine chip (derived from selected cuisine). */
   cuisine: Cuisine;
+  /** English food-photo label (for AI image + web search when dish_name is Tamil). */
+  image_subject_en?: string;
+  /** True when image_url is a fresh Gemini/Imagen render for this recipe. */
+  image_ai_generated?: boolean;
+  /** True when image_url came from an online photo search matched to the recipe. */
+  image_matched_online?: boolean;
 }

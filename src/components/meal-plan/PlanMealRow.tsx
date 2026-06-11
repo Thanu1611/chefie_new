@@ -28,7 +28,7 @@ export function PlanMealRow({ plan, onRemove, removing }: PlanMealRowProps) {
             <span className="chip text-xs">{plan.cuisineName}</span>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                isVeg ? "bg-green-50 text-green-800" : "bg-orange-50 text-orange-900"
+                isVeg ? "badge-fresh" : "badge-category"
               }`}
             >
               {isVeg ? <IconLeaf size={12} /> : <IconMeat size={12} />}
@@ -40,7 +40,7 @@ export function PlanMealRow({ plan, onRemove, removing }: PlanMealRowProps) {
               type="button"
               onClick={() => onRemove(plan.planId)}
               disabled={removing}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-error-light hover:text-error disabled:opacity-50"
               aria-label={`Remove ${plan.dishName}`}
             >
               <IconTrash size={18} />

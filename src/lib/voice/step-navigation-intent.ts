@@ -4,6 +4,9 @@ const PREVIOUS_EXACT = [
   /^previous(\s+step)?$/i,
   /^go\s+back$/i,
   /^back$/i,
+  /^முந்தைய(\s+படி)?$/u,
+  /^பின்னால்$/u,
+  /^முன்\s+படி$/u,
 ];
 
 const NEXT_EXACT = [
@@ -14,16 +17,26 @@ const NEXT_EXACT = [
   /^all\s+done$/i,
   /^move\s+on$/i,
   /^ready\s+for\s+next$/i,
+  /^அடுத்த(\s+படி)?$/u,
+  /^அடுத்து$/u,
+  /^(முடிந்தது|தயார்|முடிச்சுட்டேன்|முடிஞ்சுது)$/u,
 ];
 
 /** Cooking questions — not step navigation. */
 export function isStepQuestion(text: string): boolean {
-  const normalized = text.trim().toLowerCase();
+  const trimmed = text.trim();
+  const normalized = trimmed.toLowerCase();
   if (!normalized) return false;
   if (normalized.includes("?")) return true;
-  return /^(what|how|why|when|where|can|should|is|does|do|explain|tell\s+me|mean|means)\b/.test(
-    normalized,
-  );
+  if (
+    /^(what|how|why|when|where|can|should|is|does|do|explain|tell\s+me|mean|means)\b/.test(
+      normalized,
+    )
+  ) {
+    return true;
+  }
+
+  return /^(என்ன|எப்படி|ஏன்|எப்போது|எங்கே|சொல்லு|விளக்கு)/u.test(trimmed);
 }
 
 /** Returns navigation direction only for explicit step-change commands. */
@@ -35,11 +48,11 @@ export function parseStepNavigationIntent(
 
   const normalized = trimmed.toLowerCase();
 
-  if (PREVIOUS_EXACT.some((pattern) => pattern.test(normalized))) {
+  if (PREVIOUS_EXACT.some((pattern) => pattern.test(trimmed))) {
     return "previous";
   }
 
-  if (NEXT_EXACT.some((pattern) => pattern.test(normalized))) {
+  if (NEXT_EXACT.some((pattern) => pattern.test(trimmed))) {
     return "next";
   }
 
@@ -49,7 +62,10 @@ export function parseStepNavigationIntent(
 
   const wordCount = normalized.split(/\s+/).length;
   if (wordCount <= 4) {
-    if (/\b(next|done|ready|finished|completed)\b/.test(normalized)) {
+    if (
+      /\b(next|done|ready|finished|completed)\b/.test(normalized) ||
+      /^(அடுத்து|தயார்|முடிந்தது)/u.test(trimmed)
+    ) {
       return "next";
     }
   }

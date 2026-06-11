@@ -1,6 +1,8 @@
 import type { Cuisine } from "@/types/recipe";
 
-export const BRAND_COLOR = "#ff9066";
+export { colors as themeColors } from "@/lib/theme/colors";
+
+export const BRAND_COLOR = "#F57C00";
 
 export const CUISINES: {
   id: Cuisine;
@@ -9,10 +11,10 @@ export const CUISINES: {
   emoji: string;
 }[] = [
   {
-    id: "chinese",
-    label: "Chinese",
-    description: "Wok-fired classics & dim sum favorites",
-    emoji: "🥢",
+    id: "sri-lankan",
+    label: "Sri Lankan",
+    description: "Island curries, hoppers & sambols",
+    emoji: "🌴",
   },
   {
     id: "indian",
@@ -21,12 +23,14 @@ export const CUISINES: {
     emoji: "🍛",
   },
   {
-    id: "sri-lankan",
-    label: "Sri Lankan",
-    description: "Island curries, hoppers & sambols",
-    emoji: "🌴",
+    id: "chinese",
+    label: "Chinese",
+    description: "Wok-fired classics & dim sum favorites",
+    emoji: "🥢",
   },
 ];
+
+export const DEFAULT_CUISINE: Cuisine = "sri-lankan";
 
 export const SPICY_LABELS = ["Mild", "Light", "Medium", "Hot"] as const;
 

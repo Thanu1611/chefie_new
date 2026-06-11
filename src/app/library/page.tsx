@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { IconBook2 } from "@tabler/icons-react";
 import { DishCard } from "@/components/dishes/DishCard";
@@ -10,14 +10,57 @@ import { useSavedDishes } from "@/hooks/useSavedDishes";
 import type { Dish } from "@/types/dish";
 
 export default function LibraryPage() {
-  const { saved, loaded } = useSavedDishes();
+  const { saved, loaded, remove } = useSavedDishes();
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const savedIdKey = useMemo(
+    () =>
+      saved
+        .map((entry) => entry.dishId)
+        .sort()
+        .join("\n"),
+    [saved],
+  );
+  const prevSavedIdKeyRef = useRef("");
+
+  const handleRemoveFromLibrary = async (dish: Dish) => {
+    setRemovingId(dish.dishId);
+    setDishes((prev) => prev.filter((d) => d.dishId !== dish.dishId));
+    try {
+      const ok = await remove(dish.dishId);
+      if (!ok) {
+        setDishes((prev) =>
+          prev.some((d) => d.dishId === dish.dishId) ? prev : [...prev, dish],
+        );
+      }
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!loaded) return;
+
+    const prevKey = prevSavedIdKeyRef.current;
+    prevSavedIdKeyRef.current = savedIdKey;
+
     if (saved.length === 0) {
       setDishes([]);
+      setLoading(false);
+      return;
+    }
+
+    const prevIds = new Set(prevKey.split("\n").filter(Boolean));
+    const nextIds = savedIdKey.split("\n").filter(Boolean);
+    const isRemovalOnly =
+      prevIds.size > 0 &&
+      nextIds.length < prevIds.size &&
+      nextIds.every((id) => prevIds.has(id));
+
+    if (isRemovalOnly) {
+      setDishes((prev) => prev.filter((dish) => nextIds.includes(dish.dishId)));
       setLoading(false);
       return;
     }
@@ -40,7 +83,7 @@ export default function LibraryPage() {
         setLoading(false);
       }
     })();
-  }, [loaded, saved]);
+  }, [loaded, saved, savedIdKey]);
 
   return (
     <div className="space-y-8">
@@ -69,7 +112,12 @@ export default function LibraryPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {dishes.map((dish) => (
-            <DishCard key={dish.dishId} dish={dish} />
+            <DishCard
+              key={dish.dishId}
+              dish={dish}
+              removing={removingId === dish.dishId}
+              onRemoveFromLibrary={() => void handleRemoveFromLibrary(dish)}
+            />
           ))}
         </div>
       )}

@@ -1,4 +1,5 @@
 import { resolveDishIngredients } from "@/lib/dishes/dish-ingredients";
+import { GEMINI_TAMIL_INSTRUCTION } from "@/lib/i18n/language";
 import type { DishWithSteps } from "@/types/dish";
 
 export function buildDishVoiceContext(
@@ -50,6 +51,8 @@ export function buildDishVoiceContext(
     "- Answer only about this dish: substitutions, timing, technique, and mistakes for these steps.",
     "- Reference step numbers when guiding the user.",
     "- If asked about another recipe, politely redirect to this dish.",
+    "",
+    GEMINI_TAMIL_INSTRUCTION,
   );
 
   return lines.join("\n");
