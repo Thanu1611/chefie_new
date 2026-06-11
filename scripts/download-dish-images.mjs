@@ -43,7 +43,7 @@ const DISH_IMAGE_SOURCES = {
   "String Hoppers with Sambol":
     "https://images.pexels.com/photos/884600/pexels-photo-884600.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "Coconut Roti":
-    "https://images.pexels.com/photos/1438677/pexels-photo-1438677.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "https://upload.wikimedia.org/wikipedia/commons/4/4e/Coconut_Roti.jpg",
   "Egg Hoppers":
     "https://images.pexels.com/photos/162712/egg-white-food-protein-162712.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "Fish Cutlets":
