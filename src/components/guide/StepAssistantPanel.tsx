@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   IconRobot,
   IconSend,
-  IconRobot,
   IconUser,
   IconX,
 } from "@tabler/icons-react";
