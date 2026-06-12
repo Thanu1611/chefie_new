@@ -154,7 +154,7 @@ export function StepGuide({ dish }: StepGuideProps) {
         )}
         <button
           type="button"
-          onClick={() => setCurrentStepIndex((i) => i + 1)}
+          onClick={goToNextStep}
           className="btn-primary flex-1"
         >
           Next

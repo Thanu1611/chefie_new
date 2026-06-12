@@ -48,9 +48,13 @@ export function NavbarAuth({ className }: { className?: string }) {
 
   if (loading) {
     return (
-      <span className={cn("text-sm text-muted", className)} aria-hidden>
-        …
-      </span>
+      <Link
+        href="/login"
+        className={cn("btn-login text-sm opacity-80", className)}
+        aria-label="Log in"
+      >
+        Log in
+      </Link>
     );
   }
 

@@ -156,14 +156,9 @@ function StepAssistantModal({
           navCooldownRef.current = false;
           return;
         }
-        appendMessage(
-          "assistant",
-          `${currentStepIndex}வது படிக்கு திரும்புகிறோம்…`,
-        );
-        window.setTimeout(() => {
-          onGoPrevious();
-          navCooldownRef.current = false;
-        }, 500);
+        onGoPrevious();
+        appendMessage("assistant", "முந்தைய படிக்கு திரும்புகிறோம்…");
+        navCooldownRef.current = false;
         return;
       }
 
@@ -176,19 +171,17 @@ function StepAssistantModal({
         return;
       }
 
+      const finishedStep = step.step_number;
+      onGoNext();
       appendMessage(
         "assistant",
-        `${step.step_number}வது படி நன்றாக முடிந்தது! அடுத்த படிக்கு செல்கிறோம்…`,
+        `${finishedStep}வது படி நன்றாக முடிந்தது! அடுத்த படிக்கு செல்கிறோம்…`,
       );
-      window.setTimeout(() => {
-        onGoNext();
-        navCooldownRef.current = false;
-      }, 500);
+      navCooldownRef.current = false;
     },
     [
       appendMessage,
       canGoPrevious,
-      currentStepIndex,
       isLastStep,
       onGoNext,
       onGoPrevious,
@@ -290,14 +283,17 @@ function StepAssistantModal({
           "max-h-[min(92dvh,720px)] min-h-0 rounded-t-3xl sm:max-w-lg sm:rounded-3xl",
         )}
       >
-        <header className="shrink-0 border-b border-brand/20 bg-brand/5 p-4 sm:p-5">
+        <header
+          key={stepKey}
+          className="shrink-0 border-b border-brand/20 bg-brand/5 p-4 sm:p-5"
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-brand/15">
                 <IconRobot className="h-5 w-5 text-brand" />
               </span>
               <p className="text-xs font-medium uppercase tracking-wide text-brand">
-                Step {currentStepIndex + 1} of {totalSteps}
+                Step {step.step_number} of {totalSteps}
               </p>
               <h2
                 id="step-assistant-title"

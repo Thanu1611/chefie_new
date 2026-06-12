@@ -21,8 +21,7 @@ import {
   buildElevenLabsStepDynamicVariables,
 } from "@/lib/voice/elevenlabs-step-variables";
 import {
-  elevenLabsAgentEnvName,
-  getStepElevenLabsAgentId,
+  resolveStepElevenLabsAgent,
   type ElevenLabsAgentVariant,
 } from "@/lib/voice/elevenlabs-agents";
 import {
@@ -32,8 +31,6 @@ import {
 } from "@/lib/voice/step-navigation-intent";
 import { stepAssistantLog } from "@/lib/voice/step-assistant-speech";
 import type { StepAssistantContext } from "@/types/step-assistant";
-
-const STEP_AGENT_VARIANT: ElevenLabsAgentVariant = "step";
 
 export interface StepAssistantVoiceHandle {
   elevenLabsConnected: boolean;
@@ -49,21 +46,17 @@ interface StepAssistantVoiceBarProps {
   onControlsReady?: (controls: StepAssistantVoiceHandle) => void;
 }
 
-export function StepAssistantVoiceBar(props: StepAssistantVoiceBarProps) {
-  const agentId = getStepElevenLabsAgentId();
+interface StepAssistantVoiceInnerProps extends StepAssistantVoiceBarProps {
+  agentVariant: ElevenLabsAgentVariant;
+}
 
-  if (!agentId) {
-    return (
-      <p className="alert-warning shrink-0 border-t border-warm-200 px-4 py-2 text-center text-xs sm:px-5">
-        Set {elevenLabsAgentEnvName("step")} in .env (same idea as{" "}
-        {elevenLabsAgentEnvName("common")}) — text input below still works.
-      </p>
-    );
-  }
+export function StepAssistantVoiceBar(props: StepAssistantVoiceBarProps) {
+  const resolved = resolveStepElevenLabsAgent();
+  if (!resolved) return null;
 
   return (
-    <ConversationProvider agentId={agentId}>
-      <StepAssistantVoiceInner {...props} />
+    <ConversationProvider agentId={resolved.agentId}>
+      <StepAssistantVoiceInner {...props} agentVariant={resolved.variant} />
     </ConversationProvider>
   );
 }
@@ -80,7 +73,8 @@ function StepAssistantVoiceInner({
   onChatMessage,
   onNavigate,
   onControlsReady,
-}: StepAssistantVoiceBarProps) {
+  agentVariant,
+}: StepAssistantVoiceInnerProps) {
   const { startSession, endSession } = useConversationControls();
   const { status, message: statusMessage } = useConversationStatus();
   const { sendUserMessage, sendContextualUpdate, isSpeaking, isListening } =
@@ -116,7 +110,7 @@ function StepAssistantVoiceInner({
     onNavigateRef.current(direction);
     window.setTimeout(() => {
       navCooldownRef.current = false;
-    }, 2500);
+    }, 800);
     return true;
   }, []);
 
@@ -203,7 +197,7 @@ function StepAssistantVoiceInner({
     setConnecting(true);
     try {
       const res = await fetch(
-        `/api/elevenlabs/session?variant=${STEP_AGENT_VARIANT}`,
+        `/api/elevenlabs/session?variant=${agentVariant}`,
       );
       const data = await res.json();
 
@@ -226,7 +220,7 @@ function StepAssistantVoiceInner({
         err instanceof Error ? err.message : "Failed to start step voice session";
       appendMessage("assistant", msg);
     }
-  }, [appendMessage, sessionCallbacks, startSession, step]);
+  }, [agentVariant, appendMessage, sessionCallbacks, startSession, step]);
 
   const handleConnect = useCallback(async () => {
     if (connected) {

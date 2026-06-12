@@ -30,6 +30,20 @@ export function getStepElevenLabsAgentId(): string | undefined {
   return getElevenLabsAgentId("step");
 }
 
+/** Step agent first; fall back to common voice agent without showing config UI. */
+export function resolveStepElevenLabsAgent(): {
+  agentId: string;
+  variant: ElevenLabsAgentVariant;
+} | null {
+  const stepId = getElevenLabsAgentId("step");
+  if (stepId) return { agentId: stepId, variant: "step" };
+
+  const commonId = getElevenLabsAgentId("common");
+  if (commonId) return { agentId: commonId, variant: "common" };
+
+  return null;
+}
+
 export function resolveElevenLabsAgentId(
   dish?: DishWithSteps | null,
 ): string | undefined {

@@ -60,14 +60,29 @@ export function parseStepNavigationIntent(
     return null;
   }
 
-  const wordCount = normalized.split(/\s+/).length;
-  if (wordCount <= 4) {
+  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+  if (wordCount <= 6) {
     if (
       /\b(next|done|ready|finished|completed)\b/.test(normalized) ||
-      /^(அடுத்து|தயார்|முடிந்தது)/u.test(trimmed)
+      /^(அடுத்து|அடுத்த|தயார்|முடிந்தது)/u.test(trimmed)
     ) {
       return "next";
     }
+    if (
+      /(அடுத்த\s*படி|next\s*step|move\s*on|go\s*next)/iu.test(trimmed) &&
+      !isStepQuestion(trimmed)
+    ) {
+      return "next";
+    }
+  }
+
+  if (
+    trimmed.length <= 48 &&
+    /(அடுத்த|தயார்|முடிஞ்ச|முடிச்ச|ready|done|finished)/iu.test(trimmed) &&
+    !/(முந்தைய|previous|back|பின்னால்)/iu.test(trimmed) &&
+    !isStepQuestion(trimmed)
+  ) {
+    return "next";
   }
 
   return null;
