@@ -17,13 +17,12 @@ import { VoiceMicButton, type VoiceMicMode } from "@/components/voice/VoiceMicBu
 import { useAgentVisualizer } from "@/hooks/useAgentVisualizer";
 import { useMicVisualizer } from "@/hooks/useMicVisualizer";
 import {
+  buildElevenLabsStepConnectContext,
   buildElevenLabsStepContextUpdate,
   buildElevenLabsStepDynamicVariables,
+  isGenericCommonVoiceGreeting,
 } from "@/lib/voice/elevenlabs-step-variables";
-import {
-  resolveStepElevenLabsAgent,
-  type ElevenLabsAgentVariant,
-} from "@/lib/voice/elevenlabs-agents";
+import { resolveStepElevenLabsAgent } from "@/lib/voice/elevenlabs-agents";
 import {
   isStepQuestion,
   parseStepNavigationIntent,
@@ -46,17 +45,13 @@ interface StepAssistantVoiceBarProps {
   onControlsReady?: (controls: StepAssistantVoiceHandle) => void;
 }
 
-interface StepAssistantVoiceInnerProps extends StepAssistantVoiceBarProps {
-  agentVariant: ElevenLabsAgentVariant;
-}
-
 export function StepAssistantVoiceBar(props: StepAssistantVoiceBarProps) {
   const resolved = resolveStepElevenLabsAgent();
   if (!resolved) return null;
 
   return (
     <ConversationProvider agentId={resolved.agentId}>
-      <StepAssistantVoiceInner {...props} agentVariant={resolved.variant} />
+      <StepAssistantVoiceInner {...props} />
     </ConversationProvider>
   );
 }
@@ -73,8 +68,7 @@ function StepAssistantVoiceInner({
   onChatMessage,
   onNavigate,
   onControlsReady,
-  agentVariant,
-}: StepAssistantVoiceInnerProps) {
+}: StepAssistantVoiceBarProps) {
   const { startSession, endSession } = useConversationControls();
   const { status, message: statusMessage } = useConversationStatus();
   const { sendUserMessage, sendContextualUpdate, isSpeaking, isListening } =
@@ -97,6 +91,10 @@ function StepAssistantVoiceInner({
   const appendMessage = useCallback((role: "user" | "assistant", text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    if (role === "assistant" && isGenericCommonVoiceGreeting(trimmed)) {
+      stepAssistantLog("ignored common-agent greeting in step modal", trimmed);
+      return;
+    }
     onChatMessageRef.current(role, trimmed);
   }, []);
 
@@ -141,6 +139,14 @@ function StepAssistantVoiceInner({
     [appendMessage, nudgeAgentForQuestion, tryNavigate],
   );
 
+  const pushStepConnectContext = useCallback(() => {
+    try {
+      sendContextualUpdate(buildElevenLabsStepConnectContext(step));
+    } catch (error) {
+      stepAssistantLog("step connect context failed", error);
+    }
+  }, [sendContextualUpdate, step]);
+
   const sessionCallbacks = useCallback(
     () => ({
       onConnect: () => {
@@ -148,6 +154,7 @@ function StepAssistantVoiceInner({
         setMuted(false);
         setUserInterrupted(false);
         stepAssistantLog("step agent connected", step.step_number);
+        window.setTimeout(() => pushStepConnectContext(), 400);
       },
       onDisconnect: () => {
         setConnecting(false);
@@ -190,15 +197,13 @@ function StepAssistantVoiceInner({
         }
       },
     }),
-    [appendMessage, handleUserTranscript, setMuted, step.step_number],
+    [appendMessage, handleUserTranscript, pushStepConnectContext, setMuted, step.step_number],
   );
 
   const beginSession = useCallback(async () => {
     setConnecting(true);
     try {
-      const res = await fetch(
-        `/api/elevenlabs/session?variant=${agentVariant}`,
-      );
+      const res = await fetch("/api/elevenlabs/session?variant=step");
       const data = await res.json();
 
       if (!res.ok) {
@@ -220,7 +225,7 @@ function StepAssistantVoiceInner({
         err instanceof Error ? err.message : "Failed to start step voice session";
       appendMessage("assistant", msg);
     }
-  }, [agentVariant, appendMessage, sessionCallbacks, startSession, step]);
+  }, [appendMessage, sessionCallbacks, startSession, step]);
 
   const handleConnect = useCallback(async () => {
     if (connected) {
@@ -229,6 +234,26 @@ function StepAssistantVoiceInner({
     }
     await beginSession();
   }, [beginSession, connected, endSession]);
+
+  useEffect(() => {
+    if (status === "connected" || status === "error" || status === "disconnected") {
+      setConnecting(false);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (!connecting) return;
+    const timer = window.setTimeout(() => {
+      if (!connectedRef.current) {
+        setConnecting(false);
+        appendMessage(
+          "assistant",
+          "Voice connection timed out. Tap Start again, or type your question below.",
+        );
+      }
+    }, 20000);
+    return () => window.clearTimeout(timer);
+  }, [appendMessage, connecting]);
 
   useEffect(() => {
     if (!enabled && connected) {

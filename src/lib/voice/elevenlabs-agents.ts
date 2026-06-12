@@ -30,18 +30,14 @@ export function getStepElevenLabsAgentId(): string | undefined {
   return getElevenLabsAgentId("step");
 }
 
-/** Step agent first; fall back to common voice agent without showing config UI. */
+/** Step-by-step guide uses only the dedicated step agent — never the common agent. */
 export function resolveStepElevenLabsAgent(): {
   agentId: string;
-  variant: ElevenLabsAgentVariant;
+  variant: "step";
 } | null {
   const stepId = getElevenLabsAgentId("step");
-  if (stepId) return { agentId: stepId, variant: "step" };
-
-  const commonId = getElevenLabsAgentId("common");
-  if (commonId) return { agentId: commonId, variant: "common" };
-
-  return null;
+  if (!stepId) return null;
+  return { agentId: stepId, variant: "step" };
 }
 
 export function resolveElevenLabsAgentId(

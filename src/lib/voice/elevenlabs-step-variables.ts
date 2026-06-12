@@ -41,6 +41,37 @@ ${vars.assistant_instructions}
 Briefly greet the user and introduce this step in Tamil (2–3 short spoken sentences). Help only with this step.`;
 }
 
+/** Spoken first message when the step voice session starts. */
+export function buildStepVoiceFirstMessage(step: StepAssistantContext): string {
+  return `வணக்கம்! நீங்கள் இப்போது ${step.step_number}வது படி: ${step.step_title}. இந்த படி பற்றி எதுவும் கேளுங்கள் — நேரம், texture, தவறுகள், சமையல் குறிப்புகள்.`;
+}
+
+/** Context pushed right after connect — safer than prompt overrides (often blocked by agent settings). */
+export function buildElevenLabsStepConnectContext(
+  step: StepAssistantContext,
+): string {
+  const vars = buildElevenLabsStepDynamicVariables(step);
+  return `[STEP SESSION] User opened the step assistant for ${step.dish_name}.
+
+${vars.assistant_instructions}
+
+Greet the user now in Tamil (2–3 short spoken sentences). Say exactly this idea: "${buildStepVoiceFirstMessage(step)}"
+You are the step assistant — NOT the general Chefie Voice. Help only with this step.`;
+}
+
+/** Common / dish agent greetings that should not appear in the step assistant chat. */
+export function isGenericCommonVoiceGreeting(text: string): boolean {
+  const normalized = text.trim().toLowerCase();
+  if (!normalized) return false;
+  return (
+    /chefie voice/i.test(text) ||
+    /what ingredients do you have/i.test(normalized) ||
+    /what dish are you craving/i.test(normalized) ||
+    /what shall we cook/i.test(normalized) ||
+    /இன்று என்ன சமைக்கலாம்/.test(text)
+  );
+}
+
 /** Dynamic variables — match field names in your ElevenLabs step agent dashboard. */
 export function buildElevenLabsStepDynamicVariables(
   step: StepAssistantContext,
